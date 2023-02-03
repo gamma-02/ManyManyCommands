@@ -1,4 +1,4 @@
-https://processpdf.qoppa.com:8443/PDFToSVG/DocToHTML
+
 
 ![](./docs/readme_dark.svg)
 
