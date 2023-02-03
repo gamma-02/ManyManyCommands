@@ -13,6 +13,6 @@ ___
 </p>
 
 <div align="center">
-    <a href="https://coindrop.to/AmibeSkyfy16"> <img style="vertical-align:middle" width="200" src="./docs/coindrop.svg"> </a>
-    <a href="https://ko-fi.com/AmibeSkyfy16"> <img style="vertical-align:middle" width="200" src="./docs/KoFi.svg"> </a>
+    <a href="coindrop.to/AmibeSkyfy16"> <img style="vertical-align:middle" width="200" src="./docs/coindrop.svg"> </a>
+    <a href="https://ko-fi.com/amibeakyfy16"> <img style="vertical-align:middle" width="200" src="./docs/KoFi.svg"> </a>
 </div>
