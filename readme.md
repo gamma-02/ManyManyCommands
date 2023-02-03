@@ -4,12 +4,6 @@
 
 ___
 
-[//]: # (___)
-
-[//]: # (### Sponsor me [<img style="vertical-align:middle" width="200" src="./docs/coindrop.svg">]&#40;https://coindrop.to/AmibeSkyfy16&#41; || [<img style="vertical-align:middle" width="200" src="./docs/KoFi.svg">]&#40;https://ko-fi.com/AmibeSkyfy16&#41;)
-
-[//]: # (___)
-
 <p align="center" style="font-size:200%">
     Did you like the mod ?
 </p>
@@ -19,6 +13,6 @@ ___
 </p>
 
 <div align="center">
-    <a href="https://coindrop.to/AmibeSkyfy16"> <img style="vertical-align:middle" width="200" src="./docs/coindrop.svg"> </a> ||
+    <a href="https://coindrop.to/AmibeSkyfy16"> <img style="vertical-align:middle" width="200" src="./docs/coindrop.svg"> </a>
     <a href="https://ko-fi.com/AmibeSkyfy16"> <img style="vertical-align:middle" width="200" src="./docs/KoFi.svg"> </a>
 </div>
