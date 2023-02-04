@@ -2,12 +2,12 @@ package ch.skyfy.manymanycommands.commands
 
 import ch.skyfy.json5configlib.update
 import ch.skyfy.json5configlib.updateMap
-import ch.skyfy.manymanycommands.api.config.Player
 import ch.skyfy.manymanycommands.api.config.WildRule
 import ch.skyfy.manymanycommands.api.data.Location
+import ch.skyfy.manymanycommands.api.data.Player
 import ch.skyfy.manymanycommands.api.data.Teleportation
+import ch.skyfy.manymanycommands.api.persistent.OthersData
 import ch.skyfy.manymanycommands.api.persistent.Persistent
-import ch.skyfy.manymanycommands.api.persistent.PersistentData
 import ch.skyfy.manymanycommands.api.utils.getPlayerNameWithUUID
 import ch.skyfy.manymanycommands.api.utils.getWildRule
 import com.mojang.brigadier.CommandDispatcher
@@ -48,8 +48,8 @@ class WildCmd : AbstractTeleportation(Teleportation.wildTeleporting, Teleportati
         }
 
         init {
-            infiniteMcCoroutineTask(sync = false, client = false, period = 1.minutes) {
-                Persistent.PERSISTENT_DATA.update(PersistentData::wildTimedLocation, getRandomLocation())
+            infiniteMcCoroutineTask(sync = false, client = false, period = 10.minutes) {
+                Persistent.OTHERS_DATA.update(OthersData::wildTimedLocation, getRandomLocation())
             }
         }
 
@@ -76,12 +76,12 @@ class WildCmd : AbstractTeleportation(Teleportation.wildTeleporting, Teleportati
 
         return when (Type.valueOf(getString(context, "type"))) {
             Type.DIRECT -> getRandomLocation()
-            Type.TIMED -> Persistent.PERSISTENT_DATA.serializableData.wildTimedLocation
+            Type.TIMED -> Persistent.OTHERS_DATA.serializableData.wildTimedLocation
         }
     }
 
     override fun check(spe: ServerPlayerEntity, player: Player): Boolean {
-        Persistent.PERSISTENT_DATA.serializableData.currentUsageOfWildCommand[player.nameWithUUID]?.let { currentUsageOfWildCommand ->
+        Persistent.OTHERS_DATA.serializableData.currentUsageOfWildCommand[player.nameWithUUID]?.let { currentUsageOfWildCommand ->
             if (wildRule != null && currentUsageOfWildCommand > wildRule!!.maximumUsage) {
                 spe.sendMessage(Text.literal("You have reached the maximum number of uses for this command").setStyle(Style.EMPTY.withColor(Formatting.RED)))
                 return false
@@ -94,7 +94,7 @@ class WildCmd : AbstractTeleportation(Teleportation.wildTeleporting, Teleportati
         spe.addStatusEffect(StatusEffectInstance(StatusEffects.RESISTANCE, 20 * 20, 9))
         spe.addStatusEffect(StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 20 * 20, 9))
         spe.sendMessage(Text.literal("You have been teleported to an unknown lands, Good Adventure ! ").setStyle(Style.EMPTY.withColor(Formatting.GREEN)))
-        Persistent.PERSISTENT_DATA.updateMap(PersistentData::currentUsageOfWildCommand) { currentUsageOfWildCommand ->
+        Persistent.OTHERS_DATA.updateMap(OthersData::currentUsageOfWildCommand) { currentUsageOfWildCommand ->
             currentUsageOfWildCommand.merge(getPlayerNameWithUUID(spe), 1, Int::plus)
         }
     }

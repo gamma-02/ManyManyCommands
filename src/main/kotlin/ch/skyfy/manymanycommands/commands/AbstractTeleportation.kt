@@ -2,11 +2,11 @@
 
 package ch.skyfy.manymanycommands.commands
 
-import ch.skyfy.manymanycommands.api.config.Configs
-import ch.skyfy.manymanycommands.api.config.Player
 import ch.skyfy.manymanycommands.api.data.Location
+import ch.skyfy.manymanycommands.api.data.Player
 import ch.skyfy.manymanycommands.api.data.Teleportation
 import ch.skyfy.manymanycommands.api.events.PlayerTeleportationEvents
+import ch.skyfy.manymanycommands.api.persistent.Persistent
 import ch.skyfy.manymanycommands.api.utils.getPlayerNameWithUUID
 import ch.skyfy.manymanycommands.api.utils.isDistanceGreaterThan
 import ch.skyfy.manymanycommands.callbacks.EntityMoveCallback
@@ -57,7 +57,7 @@ abstract class AbstractTeleportation(
         if (context.source.player !is ServerPlayerEntity) return Command.SINGLE_SUCCESS
 
         val spe = context.source.player!!
-        val player = Configs.PLAYERS.serializableData.players.find { getPlayerNameWithUUID(spe) == it.nameWithUUID } ?: return Command.SINGLE_SUCCESS
+        val player = Persistent.HOMES.serializableData.players.find { getPlayerNameWithUUID(spe) == it.nameWithUUID } ?: return Command.SINGLE_SUCCESS
         val rule = getRule(player) ?: return Command.SINGLE_SUCCESS
 
         // If any other teleportation are already in progress

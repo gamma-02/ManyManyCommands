@@ -1,7 +1,7 @@
 package ch.skyfy.manymanycommands.commands.homes
 
-import ch.skyfy.manymanycommands.api.config.Configs
-import ch.skyfy.manymanycommands.api.config.Player
+import ch.skyfy.manymanycommands.api.data.Player
+import ch.skyfy.manymanycommands.api.persistent.Persistent
 import ch.skyfy.manymanycommands.api.utils.getPlayerNameWithUUID
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.DoubleArgumentType
@@ -22,13 +22,13 @@ class HomesCmd {
     private fun <S : ServerCommandSource> homesListForAnotherPlayer(commandContext: CommandContext<S>, suggestionsBuilder: SuggestionsBuilder): CompletableFuture<Suggestions> {
         val targetPlayerName = StringArgumentType.getString(commandContext, "playerName")
         val spe = commandContext.source.server.playerManager.getPlayer(targetPlayerName) ?: return suggestionsBuilder.buildFuture()
-        val player = Configs.PLAYERS.serializableData.players.find { it.nameWithUUID == getPlayerNameWithUUID(spe) } ?: return suggestionsBuilder.buildFuture()
+        val player = Persistent.HOMES.serializableData.players.find { it.nameWithUUID == getPlayerNameWithUUID(spe) } ?: return suggestionsBuilder.buildFuture()
         return homesListImpl(suggestionsBuilder, player)
     }
 
     private fun <S : ServerCommandSource> homesList(commandContext: CommandContext<S>, suggestionsBuilder: SuggestionsBuilder): CompletableFuture<Suggestions> {
         val spe = commandContext.source.player ?: return suggestionsBuilder.buildFuture()
-        val player = Configs.PLAYERS.serializableData.players.find { it.nameWithUUID == getPlayerNameWithUUID(spe) } ?: return suggestionsBuilder.buildFuture()
+        val player = Persistent.HOMES.serializableData.players.find { it.nameWithUUID == getPlayerNameWithUUID(spe) } ?: return suggestionsBuilder.buildFuture()
         return homesListImpl(suggestionsBuilder, player)
     }
 

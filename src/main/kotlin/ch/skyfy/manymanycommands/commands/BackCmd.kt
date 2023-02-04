@@ -1,7 +1,7 @@
 package ch.skyfy.manymanycommands.commands
 
-import ch.skyfy.manymanycommands.api.config.Player
 import ch.skyfy.manymanycommands.api.data.Location
+import ch.skyfy.manymanycommands.api.data.Player
 import ch.skyfy.manymanycommands.api.data.Teleportation
 import ch.skyfy.manymanycommands.api.persistent.Persistent
 import ch.skyfy.manymanycommands.api.utils.getBackRule
@@ -27,7 +27,7 @@ class BackCmd : AbstractTeleportation(Teleportation.backTeleporting, Teleportati
     }
 
     override fun getLocation(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity, player: Player): Location? {
-        return Persistent.PERSISTENT_DATA.serializableData.previousLocation[getPlayerNameWithUUID(spe)]
+        return Persistent.OTHERS_DATA.serializableData.previousLocation[getPlayerNameWithUUID(spe)]
     }
 
     override fun check(spe: ServerPlayerEntity, player: Player): Boolean {

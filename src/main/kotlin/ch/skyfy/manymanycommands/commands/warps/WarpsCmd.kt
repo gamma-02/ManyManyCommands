@@ -1,6 +1,6 @@
 package ch.skyfy.manymanycommands.commands.warps
 
-import ch.skyfy.manymanycommands.api.config.Configs
+import ch.skyfy.manymanycommands.api.persistent.Persistent
 import ch.skyfy.manymanycommands.api.utils.getPlayer
 import ch.skyfy.manymanycommands.api.utils.getWarps
 import com.mojang.brigadier.CommandDispatcher
@@ -65,9 +65,9 @@ class WarpsCmd {
         }
 
         private fun <S : ServerCommandSource> warps(commandContext: CommandContext<S>, suggestionsBuilder: SuggestionsBuilder): CompletableFuture<Suggestions> {
-            if (commandContext.source.player !is ServerPlayerEntity) return suggestMatching(Configs.WARPS.serializableData.warps.map { it.name }, suggestionsBuilder)
+            if (commandContext.source.player !is ServerPlayerEntity) return suggestMatching(Persistent.WARPS.serializableData.warps.map { it.name }, suggestionsBuilder)
 
-            getPlayer(commandContext.source.player!!)?.let {player ->
+            getPlayer(commandContext.source.player!!)?.let { player ->
                 return suggestMatching(getWarps(player).map { it.name }, suggestionsBuilder)
             }
 

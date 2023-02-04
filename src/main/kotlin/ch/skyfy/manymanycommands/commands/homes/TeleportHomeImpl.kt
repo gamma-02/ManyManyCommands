@@ -1,8 +1,9 @@
 package ch.skyfy.manymanycommands.commands.homes
 
-import ch.skyfy.manymanycommands.api.config.Home
-import ch.skyfy.manymanycommands.api.config.Player
+import ch.skyfy.manymanycommands.api.config.HomesRule
+import ch.skyfy.manymanycommands.api.data.Home
 import ch.skyfy.manymanycommands.api.data.Location
+import ch.skyfy.manymanycommands.api.data.Player
 import ch.skyfy.manymanycommands.api.data.Teleportation
 import ch.skyfy.manymanycommands.api.persistent.Persistent
 import ch.skyfy.manymanycommands.api.utils.getHomesRule
@@ -20,9 +21,11 @@ import net.minecraft.util.Formatting
 abstract class TeleportHomeImpl : AbstractTeleportation(Teleportation.homesTeleporting, Teleportation.homesCooldowns) {
 
     private var home: Home? = null
+    private var homesRule: HomesRule? = null
 
     override fun getRule(player: Player): TeleportationRule? {
         val rule = getHomesRule(player) ?: return null
+        this.homesRule = rule
         return TeleportationRule(rule.cooldown, rule.standStill)
     }
 
@@ -38,11 +41,17 @@ abstract class TeleportHomeImpl : AbstractTeleportation(Teleportation.homesTelep
     }
 
     override fun check(spe: ServerPlayerEntity, player: Player): Boolean {
+        homesRule?.let { homesRules ->
+            if (homesRules.allowedDimensionTeleporting.none { it == spe.world.dimensionKey.value.toString() }) {
+                spe.sendMessage(Text.literal("You cannot use this command in this dimension !").setStyle(Style.EMPTY.withColor(Formatting.RED)))
+                return false
+            }
+        }
         return true
     }
 
     override fun onTeleport(spe: ServerPlayerEntity) {
-        Persistent.PERSISTENT_DATA.serializableData.previousLocation[getPlayerNameWithUUID(spe)] = Location(spe.x, spe.y, spe.z, spe.yaw, spe.pitch, spe.world.dimensionKey.value.toString())
+        Persistent.OTHERS_DATA.serializableData.previousLocation[getPlayerNameWithUUID(spe)] = Location(spe.x, spe.y, spe.z, spe.yaw, spe.pitch, spe.world.dimensionKey.value.toString())
         spe.sendMessage(Text.literal("You've arrived at your destination (${home?.name})").setStyle(Style.EMPTY.withColor(Formatting.GREEN)))
     }
 }

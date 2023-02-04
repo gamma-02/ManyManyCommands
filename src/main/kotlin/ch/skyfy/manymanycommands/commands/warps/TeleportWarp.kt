@@ -1,11 +1,10 @@
 package ch.skyfy.manymanycommands.commands.warps
 
-import ch.skyfy.manymanycommands.api.config.Configs
-import ch.skyfy.manymanycommands.api.config.Player
-import ch.skyfy.manymanycommands.api.config.Warp
 import ch.skyfy.manymanycommands.api.config.WarpRule
 import ch.skyfy.manymanycommands.api.data.Location
+import ch.skyfy.manymanycommands.api.data.Player
 import ch.skyfy.manymanycommands.api.data.Teleportation
+import ch.skyfy.manymanycommands.api.data.Warp
 import ch.skyfy.manymanycommands.api.persistent.Persistent
 import ch.skyfy.manymanycommands.api.utils.getPlayerNameWithUUID
 import ch.skyfy.manymanycommands.api.utils.getWarpRule
@@ -35,13 +34,13 @@ class TeleportWarp : AbstractTeleportation(Teleportation.warpsTeleporting, Telep
 
         getWarps(player)
 
-        val warp = Configs.WARPS.serializableData.warps.find { it.name == warpName }
+        val warp = Persistent.WARPS.serializableData.warps.find { it.name == warpName }
         if (warp == null) {
             context.source.player?.sendMessage(Text.literal("Warp $warpName does not exist !").setStyle(Style.EMPTY.withColor(Formatting.RED)))
             return null
         }
 
-        if(getWarps(player).none { it.name == warp.name }){
+        if (getWarps(player).none { it.name == warp.name }) {
             context.source.player?.sendMessage(Text.literal("Warp $warpName exist, but you don't have the privilege to use it").setStyle(Style.EMPTY.withColor(Formatting.GOLD)))
             return null
         }
@@ -51,8 +50,8 @@ class TeleportWarp : AbstractTeleportation(Teleportation.warpsTeleporting, Telep
     }
 
     override fun check(spe: ServerPlayerEntity, player: Player): Boolean {
-        warpRule?.let {warpRule ->
-            if(warpRule.allowedDimensionTeleporting.none { it == spe.world.dimensionKey.value.toString() }){
+        warpRule?.let { warpRule ->
+            if (warpRule.allowedDimensionTeleporting.none { it == spe.world.dimensionKey.value.toString() }) {
                 spe.sendMessage(Text.literal("You cannot use this command in this dimension !").setStyle(Style.EMPTY.withColor(Formatting.RED)))
                 return false
             }
@@ -61,7 +60,7 @@ class TeleportWarp : AbstractTeleportation(Teleportation.warpsTeleporting, Telep
     }
 
     override fun onTeleport(spe: ServerPlayerEntity) {
-        Persistent.PERSISTENT_DATA.serializableData.previousLocation[getPlayerNameWithUUID(spe)] = Location(spe.x, spe.y, spe.z, spe.yaw, spe.pitch, spe.world.dimensionKey.value.toString())
+        Persistent.OTHERS_DATA.serializableData.previousLocation[getPlayerNameWithUUID(spe)] = Location(spe.x, spe.y, spe.z, spe.yaw, spe.pitch, spe.world.dimensionKey.value.toString())
         spe.sendMessage(Text.literal("You've arrived at your destination (${warp?.name})").setStyle(Style.EMPTY.withColor(Formatting.GREEN)))
     }
 

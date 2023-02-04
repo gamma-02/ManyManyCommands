@@ -1,8 +1,8 @@
 package ch.skyfy.manymanycommands.commands.homes
 
 import ch.skyfy.json5configlib.updateIterableNested
-import ch.skyfy.manymanycommands.api.config.Configs
-import ch.skyfy.manymanycommands.api.config.Player
+import ch.skyfy.manymanycommands.api.data.Player
+import ch.skyfy.manymanycommands.api.persistent.Persistent
 import ch.skyfy.manymanycommands.api.utils.getPlayerNameWithUUID
 import ch.skyfy.manymanycommands.commands.AbstractCommand
 import com.mojang.brigadier.Command.SINGLE_SUCCESS
@@ -19,9 +19,9 @@ fun deleteHome(
     homeName: String
 ) : Int {
 
-    val player = Configs.PLAYERS.serializableData.players.find { it.nameWithUUID == getPlayerNameWithUUID(spe) } ?: return 0
+    val player = Persistent.HOMES.serializableData.players.find { it.nameWithUUID == getPlayerNameWithUUID(spe) } ?: return 0
 
-    Configs.PLAYERS.updateIterableNested(Player::homes, player.homes) { homes ->
+    Persistent.HOMES.updateIterableNested(Player::homes, player.homes) { homes ->
         if (homes.removeIf { it.name == homeName }) spe.sendMessage(Text.literal("Home $homeName has been successfully removed").setStyle(Style.EMPTY.withColor(Formatting.GREEN)))
         else spe.sendMessage(Text.literal("Home $homeName can not be removed because it does not exist").setStyle(Style.EMPTY.withColor(Formatting.RED)))
     }

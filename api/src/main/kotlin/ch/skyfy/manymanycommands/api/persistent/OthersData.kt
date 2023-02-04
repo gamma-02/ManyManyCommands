@@ -6,14 +6,10 @@ import ch.skyfy.manymanycommands.api.data.Location
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PersistentData(
+data class OthersData(
     val previousLocation: MutableMap<String, Location>,
     val currentUsageOfWildCommand: MutableMap<String, Int>,
     var wildTimedLocation: Location?
 ) : Validatable
 
-class DefaultPersistentData : Defaultable<PersistentData> {
-    override fun getDefault(): PersistentData {
-        return PersistentData(mutableMapOf(), mutableMapOf(), null)
-    }
-}
+class DefaultOthersData : Defaultable<OthersData> { override fun getDefault() = OthersData(mutableMapOf(), mutableMapOf(), null) }
