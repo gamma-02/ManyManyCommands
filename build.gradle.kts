@@ -104,8 +104,8 @@ repositories {
 }
 
 dependencies {
-//    implementation(project(path = ":api", configuration = "namedElements"))?.let { include(it) }
-    implementation(project(path = ":api", configuration = "namedElements"))
+    implementation(project(path = ":api", configuration = "namedElements"))?.let { include(it) }
+//    implementation(project(path = ":api", configuration = "namedElements"))
 }
 
 tasks {
@@ -117,7 +117,7 @@ tasks {
     val copyJarToTestServer = register("copyJarToTestServer") {
         println("copy to server")
         copyFile("build/libs/manymanycommands-${project.properties["mod_version"]}.jar", project.property("testServerModsFolder") as String)
-        copyFile("api/build/libs/manymanycommands-api-${project.properties["mod_version"]}.jar", project.property("testServerModsFolder") as String)
+//        copyFile("api/build/libs/manymanycommands-api-${project.properties["mod_version"]}.jar", project.property("testServerModsFolder") as String)
     }
 
     build { doLast { copyJarToTestServer.get() } }
