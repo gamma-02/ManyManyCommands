@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.nio.file.Path
 
+@Suppress("unused")
 class ManyManyCommandsAPIMod : ModInitializer {
 
     companion object {

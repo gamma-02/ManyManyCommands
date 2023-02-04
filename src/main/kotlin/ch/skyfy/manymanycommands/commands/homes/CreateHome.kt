@@ -6,46 +6,47 @@ import ch.skyfy.manymanycommands.api.config.Player
 import ch.skyfy.manymanycommands.api.utils.getHomesRule
 import ch.skyfy.json5configlib.updateIterableNested
 import ch.skyfy.manymanycommands.api.data.Location
+import ch.skyfy.manymanycommands.api.utils.getPlayerNameWithUUID
 import ch.skyfy.manymanycommands.commands.AbstractCommand
 import com.mojang.brigadier.Command.SINGLE_SUCCESS
 import com.mojang.brigadier.arguments.DoubleArgumentType.getDouble
 import com.mojang.brigadier.arguments.FloatArgumentType.getFloat
 import com.mojang.brigadier.arguments.StringArgumentType.getString
 import com.mojang.brigadier.context.CommandContext
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 fun addHomeToPlayer(
-    playerEntity: PlayerEntity,
+    spe: ServerPlayerEntity,
     homeName: String,
-    x: Double = playerEntity.x,
-    y: Double = playerEntity.y,
-    z: Double = playerEntity.z,
-    pitch: Float = playerEntity.pitch,
-    yaw: Float = playerEntity.yaw
+    x: Double = spe.x,
+    y: Double = spe.y,
+    z: Double = spe.z,
+    pitch: Float = spe.pitch,
+    yaw: Float = spe.yaw
 ) : Int {
 
-    val player = Configs.PLAYERS_CONFIG.serializableData.players.find { playerEntity.uuidAsString == it.uuid } ?: return 0
+    val player = Configs.PLAYERS.serializableData.players.find { getPlayerNameWithUUID(spe) == it.nameWithUUID } ?: return 0
     val rule = getHomesRule(player) ?: return 0
 
     // Check for home duplication
     player.homes.find { homeName == it.name }?.let {
-        playerEntity.sendMessage(Text.literal("You already have a home named $homeName").setStyle(Style.EMPTY.withColor(Formatting.RED)))
+        spe.sendMessage(Text.literal("You already have a home named $homeName").setStyle(Style.EMPTY.withColor(Formatting.RED)))
         return 0
     }
 
     // Check for maxHomes rule
     if (player.homes.size + 1 > rule.maxHomes) {
-        playerEntity.sendMessage(Text.literal("You can't have more than ${rule.maxHomes} homes").setStyle(Style.EMPTY.withColor(Formatting.RED)))
+        spe.sendMessage(Text.literal("You can't have more than ${rule.maxHomes} homes").setStyle(Style.EMPTY.withColor(Formatting.RED)))
         return 0
     }
 
-    Configs.PLAYERS_CONFIG.updateIterableNested(Player::homes, player.homes) { it.add(Home(homeName, Location(x, y, z, pitch, yaw, playerEntity.world.dimensionKey.value.toString()))) }
+    Configs.PLAYERS.updateIterableNested(Player::homes, player.homes) { it.add(Home(homeName, Location(x, y, z, pitch, yaw, spe.world.dimensionKey.value.toString()))) }
 
-    playerEntity.sendMessage(Text.literal("The home of name «$homeName» at coordinate ${String.format("%.2f", x)} ${String.format("%.2f", y)} ${String.format("%.2f", z)} has been added").setStyle(Style.EMPTY.withColor(Formatting.GREEN)))
+    spe.sendMessage(Text.literal("The home of name «$homeName» at coordinate ${String.format("%.2f", x)} ${String.format("%.2f", y)} ${String.format("%.2f", z)} has been added").setStyle(Style.EMPTY.withColor(Formatting.GREEN)))
     return 0
 }
 
@@ -58,7 +59,7 @@ class CreateHome : AbstractCommand() {
 class CreateHomeWithCoordinates : AbstractCommand()  {
     override fun runImpl(context: CommandContext<ServerCommandSource>): Int {
         return addHomeToPlayer(
-            playerEntity = context.source?.player ?: return SINGLE_SUCCESS,
+            spe = context.source?.player ?: return SINGLE_SUCCESS,
             homeName = getString(context, "homeName"),
             x = getDouble(context, "x"),
             y = getDouble(context, "y"),
@@ -85,7 +86,7 @@ class CreateHomeForAnotherPlayerWithCoordinates : AbstractCommand()  {
         val targetPlayer = context.source?.server?.playerManager?.getPlayer(targetPlayerName)
         if (targetPlayer != null)
             addHomeToPlayer(
-                playerEntity = targetPlayer,
+                spe = targetPlayer,
                 homeName = getString(context, "homeName"),
                 x = getDouble(context, "x"),
                 y = getDouble(context, "y"),

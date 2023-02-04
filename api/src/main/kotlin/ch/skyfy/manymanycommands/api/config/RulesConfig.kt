@@ -11,8 +11,10 @@ data class RulesConfig(
     val homesRules: MutableList<HomesRules>,
     @SerialComment("Same but for the /back command")
     val backRules: MutableList<BackRules>,
-    @SerialComment("Same here but for the /warps command")
-    val warpRules: MutableList<WarpRules>
+    @SerialComment("Same but for the /warps command")
+    val warpRules: MutableList<WarpRules>,
+    @SerialComment("Same but for the /wild command")
+    val wildRules: MutableList<WildRules>
 ) : Validatable
 
 @Serializable
@@ -22,6 +24,7 @@ data class HomesRules(
     @SerialComment("The rules to use in relation with /homes commands")
     val homesRule: HomesRule
 ) : Validatable
+
 @Serializable
 data class HomesRule(
     @SerialComment("The maximum number of homes")
@@ -29,7 +32,9 @@ data class HomesRule(
     @SerialComment("The number of seconds you have to wait before teleporting a new time")
     val cooldown: Int = 15,
     @SerialComment("The number of seconds to remain standing without moving more than 2 blocks before the teleportation is effective")
-    val standStill: Int = 5
+    val standStill: Int = 5,
+    @SerialComment("The list of dimension where you can use the /homes teleport command")
+    val allowedDimensionTeleporting: MutableList<String>
 ) : Validatable {
     override fun validateImpl(errors: MutableList<String>) {
         if (maxHomes < 0) errors.add("maxHome cannot have a negative value")
@@ -45,12 +50,15 @@ data class WarpRules(
     @SerialComment("The rules to use in relation with /warps command")
     val warpRule: WarpRule
 ) : Validatable
+
 @Serializable
 data class WarpRule(
     @SerialComment("The number of seconds you have to wait before using /warps teleport a new time")
     val cooldown: Int = 15,
     @SerialComment("The number of seconds to remain standing without moving more than 2 blocks before the teleportation is effective")
-    val standStill: Int = 5
+    val standStill: Int = 5,
+    @SerialComment("The list of dimension where you can use the /warps teleport command")
+    val allowedDimensionTeleporting: MutableList<String>
 ) : Validatable {
     override fun validateImpl(errors: MutableList<String>) {
         if (cooldown < 0) errors.add("cooldown cannot have a negative value")
@@ -65,12 +73,40 @@ data class BackRules(
     @SerialComment("The rules to use in relation with /back command")
     val backRule: BackRule
 ) : Validatable
+
 @Serializable
 data class BackRule(
     @SerialComment("The number of seconds you have to wait before using /back a new time")
     val cooldown: Int = 15,
     @SerialComment("The number of seconds to remain standing without moving more than 2 blocks before the teleportation is effective")
-    val standStill: Int = 5
+    val standStill: Int = 5,
+    @SerialComment("The list of dimension where you can use the /back command")
+    val allowedDimension: MutableList<String>
+) : Validatable {
+    override fun validateImpl(errors: MutableList<String>) {
+        if (cooldown < 0) errors.add("cooldown cannot have a negative value")
+        if (standStill < 0) errors.add("standStill cannot have a negative value")
+    }
+}
+
+@Serializable
+data class WildRules(
+    @SerialComment("The name to identify the rules")
+    val name: String,
+    @SerialComment("The rules to use in relation with /wild command")
+    val wildRule: WildRule
+) : Validatable
+
+@Serializable
+data class WildRule(
+    @SerialComment("The number max of usage a player can use /wild")
+    val maximumUsage: Int,
+    @SerialComment("The number of seconds you have to wait before using wild a new time")
+    val cooldown: Int = 15,
+    @SerialComment("The number of seconds to remain standing without moving more than 2 blocks before the teleportation is effective")
+    val standStill: Int = 3,
+    @SerialComment("The list of dimension where you can use the /wild command")
+    val allowedDimension: MutableList<String>
 ) : Validatable {
     override fun validateImpl(errors: MutableList<String>) {
         if (cooldown < 0) errors.add("cooldown cannot have a negative value")
@@ -81,18 +117,21 @@ data class BackRule(
 class DefaultRulesConfig : Defaultable<RulesConfig> {
     override fun getDefault() = RulesConfig(
         mutableListOf(
-            HomesRules("SHORT", HomesRule(3, 10, 3)),
-            HomesRules("MEDIUM", HomesRule(4, 15, 5)),
-            HomesRules("LONG", HomesRule(5, 30, 5)),
-            HomesRules("BORING", HomesRule(6, 60, 5)),
+            HomesRules("SHORT", HomesRule(3, 10, 3, mutableListOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
+            HomesRules("MEDIUM", HomesRule(4, 15, 5, mutableListOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
+            HomesRules("LONG", HomesRule(5, 30, 5, mutableListOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
+            HomesRules("BORING", HomesRule(6, 60, 5, mutableListOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
         ),
         mutableListOf(
-            BackRules("SHORT", BackRule(10, 3)),
-            BackRules("MEDIUM", BackRule(20, 5))
+            BackRules("SHORT", BackRule(10, 3, mutableListOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
+            BackRules("MEDIUM", BackRule(20, 5, mutableListOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end")))
         ),
         mutableListOf(
-            WarpRules("SHORT", WarpRule(10, 3)),
-            WarpRules("MEDIUM", WarpRule(20, 5))
+            WarpRules("SHORT", WarpRule(10, 3, mutableListOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
+            WarpRules("MEDIUM", WarpRule(20, 5, mutableListOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end")))
+        ),
+        mutableListOf(
+            WildRules("DEFAULT", WildRule(5, 3600, 3, mutableListOf("minecraft:overworld")))
         )
     )
 

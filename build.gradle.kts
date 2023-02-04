@@ -23,6 +23,10 @@ allprojects {
     repositories {
         mavenCentral()
         maven("https://repo.repsy.io/mvn/amibeskyfy16/repo") // Use for my JsonConfig lib
+        maven("https://www.cursemaven.com"){
+            content { includeGroup("curse.maven") }
+        }
+        maven("https://maven.nucleoid.xyz")
     }
 
     dependencies {
@@ -32,6 +36,8 @@ allprojects {
         modImplementation("net.fabricmc:fabric-loader:${properties["loader_version"]}")
         modImplementation("net.fabricmc.fabric-api:fabric-api:${properties["fabric_version"]}")
         modImplementation("net.fabricmc:fabric-language-kotlin:${properties["fabric_kotlin_version"]}")
+        modImplementation("net.silkmc:silk-game:${properties["silk_version"]}")
+//        modImplementation("fr.catcore:server-translations-api:${properties["server_translations_version"]}")
 
         transitiveInclude(implementation("ch.skyfy.json5configlib:json5-config-lib:1.0.21")!!)
 
@@ -60,6 +66,7 @@ allprojects {
 
         named<KotlinCompile>("compileKotlin") {
             kotlinOptions.jvmTarget = javaVersion.toString()
+            kotlinOptions.freeCompilerArgs += "-Xskip-prerelease-check"
         }
 
         named<JavaCompile>("compileJava") {

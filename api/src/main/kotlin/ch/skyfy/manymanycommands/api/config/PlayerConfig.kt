@@ -8,9 +8,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PlayersConfig(
+    @SerialComment("When player are joining the server for a first time, they will be added to a player group called DEFAULT")
     var shouldAutoAddPlayerToADefaultGroup: Boolean,
     @SerialComment("Will contain the list of players, with their created homes")
     var players: MutableSet<Player>,
+    @SerialComment("The list of player group")
     var playerGroups: MutableList<PlayerGroup>
 ) : Validatable {
     override fun validateImpl(errors: MutableList<String>) {
@@ -20,38 +22,30 @@ data class PlayersConfig(
 
 @Serializable
 data class PlayerGroup(
+    @SerialComment("The name of the group")
     val name: String,
     @SerialComment("The name of the homesRules to use")
-    var homesRulesName: String,
+    val homesRulesName: String,
     @SerialComment("The name of the warpRules to use")
-    var warpRulesName: String,
+    val warpRulesName: String,
     @SerialComment("The name of the backRules to use")
-    var backRulesName: String,
+    val backRulesName: String,
+    @SerialComment("The name of the wildRules to use")
+    val wildRulesName: String,
     @SerialComment("The name of the warps groups where the players of this group can have access")
-    var warpGroups: MutableList<String>,
+    val warpGroups: MutableList<String>,
     @SerialComment("The players that are member of this group")
-    val players: MutableSet<SimplePlayer>
+    val players: MutableSet<String>
 )
 
 @Serializable
 data class Player(
-    var uuid: String,
-    var name: String,
+    var nameWithUUID: String,
     var homes: MutableSet<Home> = mutableSetOf()
 ) : Validatable {
     override fun validateImpl(errors: MutableList<String>) {
         homes.forEach { it.validateImpl(errors) }
 
-        // TODO check in mojang database if this uuid is a real and premium minecraft account
-    }
-}
-
-@Serializable
-data class SimplePlayer(
-    var uuid: String,
-    var name: String
-) : Validatable {
-    override fun validateImpl(errors: MutableList<String>) {
         // TODO check in mojang database if this uuid is a real and premium minecraft account
     }
 }
@@ -67,7 +61,7 @@ class DefaultPlayerHomeConfig : Defaultable<PlayersConfig> {
         true,
         mutableSetOf(),
         mutableListOf(
-            PlayerGroup("DEFAULT", "SHORT", "SHORT", "SHORT", mutableListOf("DEFAULT"), mutableSetOf())
+            PlayerGroup("DEFAULT", "SHORT", "SHORT", "SHORT", "DEFAULT", mutableListOf("DEFAULT"), mutableSetOf())
         )
     )
 }

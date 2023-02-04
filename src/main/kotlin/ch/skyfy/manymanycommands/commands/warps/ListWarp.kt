@@ -1,6 +1,7 @@
 package ch.skyfy.manymanycommands.commands.warps
 
 import ch.skyfy.manymanycommands.api.config.Configs
+import ch.skyfy.manymanycommands.api.utils.getPlayerNameWithUUID
 import ch.skyfy.manymanycommands.api.utils.getWarps
 import ch.skyfy.manymanycommands.commands.AbstractCommand
 import com.mojang.brigadier.Command
@@ -16,7 +17,7 @@ class ListWarp : AbstractCommand() {
         if (context.source.player !is ServerPlayerEntity) return 1
         val spe = context.source.player!!
 
-        Configs.PLAYERS_CONFIG.serializableData.players.firstOrNull { it.uuid == spe.uuidAsString }?.let { player ->
+        Configs.PLAYERS.serializableData.players.firstOrNull { it.nameWithUUID == getPlayerNameWithUUID(spe) }?.let { player ->
 
 //            Configs.WARPS.serializableData.groups.filter { it.name }
 

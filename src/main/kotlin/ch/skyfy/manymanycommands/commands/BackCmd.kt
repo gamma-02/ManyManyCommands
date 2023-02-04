@@ -5,6 +5,7 @@ import ch.skyfy.manymanycommands.api.data.Location
 import ch.skyfy.manymanycommands.api.data.Teleportation
 import ch.skyfy.manymanycommands.api.persistent.Persistent
 import ch.skyfy.manymanycommands.api.utils.getBackRule
+import ch.skyfy.manymanycommands.api.utils.getPlayerNameWithUUID
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
 import net.minecraft.server.command.CommandManager
@@ -20,14 +21,19 @@ class BackCmd : AbstractTeleportation(Teleportation.backTeleporting, Teleportati
         }
     }
 
-    override fun onTeleport(spe: ServerPlayerEntity) {}
-
-    override fun getLocation(context: CommandContext<ServerCommandSource>, player: Player): Location? {
-        return Persistent.PERSISTENT_DATA.serializableData.previousLocation[context.source.player?.uuidAsString]
-    }
-
     override fun getRule(player: Player): TeleportationRule? {
         val rule = getBackRule(player) ?: return null
         return TeleportationRule(rule.cooldown, rule.standStill)
     }
+
+    override fun getLocation(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity, player: Player): Location? {
+        return Persistent.PERSISTENT_DATA.serializableData.previousLocation[getPlayerNameWithUUID(spe)]
+    }
+
+    override fun check(spe: ServerPlayerEntity, player: Player): Boolean {
+        return true
+    }
+
+    override fun onTeleport(spe: ServerPlayerEntity) {}
+
 }

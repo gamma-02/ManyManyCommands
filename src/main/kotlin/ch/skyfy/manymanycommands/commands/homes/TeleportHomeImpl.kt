@@ -6,6 +6,7 @@ import ch.skyfy.manymanycommands.api.data.Location
 import ch.skyfy.manymanycommands.api.data.Teleportation
 import ch.skyfy.manymanycommands.api.persistent.Persistent
 import ch.skyfy.manymanycommands.api.utils.getHomesRule
+import ch.skyfy.manymanycommands.api.utils.getPlayerNameWithUUID
 import ch.skyfy.manymanycommands.commands.AbstractTeleportation
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.arguments.StringArgumentType.getString
@@ -20,12 +21,12 @@ abstract class TeleportHomeImpl : AbstractTeleportation(Teleportation.homesTelep
 
     private var home: Home? = null
 
-    override fun onTeleport(spe: ServerPlayerEntity) {
-        Persistent.PERSISTENT_DATA.serializableData.previousLocation[spe.uuidAsString] = Location(spe.x, spe.y, spe.z, spe.yaw, spe.pitch, spe.world.dimensionKey.value.toString())
-        spe.sendMessage(Text.literal("You've arrived at your destination (${home?.name})").setStyle(Style.EMPTY.withColor(Formatting.GREEN)))
+    override fun getRule(player: Player): TeleportationRule? {
+        val rule = getHomesRule(player) ?: return null
+        return TeleportationRule(rule.cooldown, rule.standStill)
     }
 
-    override fun getLocation(context: CommandContext<ServerCommandSource>, player: Player): Location? {
+    override fun getLocation(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity, player: Player): Location? {
         val homeName = getString(context, "homeName")
         val home = player.homes.find { it.name == homeName }
         if (home == null) {
@@ -36,9 +37,13 @@ abstract class TeleportHomeImpl : AbstractTeleportation(Teleportation.homesTelep
         return home.location
     }
 
-    override fun getRule(player: Player): TeleportationRule? {
-        val rule = getHomesRule(player) ?: return null
-        return TeleportationRule(rule.cooldown, rule.standStill)
+    override fun check(spe: ServerPlayerEntity, player: Player): Boolean {
+        return true
+    }
+
+    override fun onTeleport(spe: ServerPlayerEntity) {
+        Persistent.PERSISTENT_DATA.serializableData.previousLocation[getPlayerNameWithUUID(spe)] = Location(spe.x, spe.y, spe.z, spe.yaw, spe.pitch, spe.world.dimensionKey.value.toString())
+        spe.sendMessage(Text.literal("You've arrived at your destination (${home?.name})").setStyle(Style.EMPTY.withColor(Formatting.GREEN)))
     }
 }
 

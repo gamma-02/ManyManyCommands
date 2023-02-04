@@ -7,11 +7,13 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PersistentData(
-    val previousLocation: MutableMap<String, Location>
+    val previousLocation: MutableMap<String, Location>,
+    val currentUsageOfWildCommand: MutableMap<String, Int>,
+    var wildTimedLocation: Location?
 ) : Validatable
 
 class DefaultPersistentData : Defaultable<PersistentData> {
     override fun getDefault(): PersistentData {
-        return PersistentData(mutableMapOf())
+        return PersistentData(mutableMapOf(), mutableMapOf(), null)
     }
 }

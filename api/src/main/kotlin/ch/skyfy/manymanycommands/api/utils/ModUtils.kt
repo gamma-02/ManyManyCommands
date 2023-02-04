@@ -2,14 +2,8 @@ package ch.skyfy.manymanycommands.api.utils
 
 import ch.skyfy.manymanycommands.api.ManyManyCommandsAPIMod
 import ch.skyfy.manymanycommands.api.config.*
-import com.mojang.brigadier.context.CommandContext
-import com.mojang.brigadier.suggestion.Suggestions
-import com.mojang.brigadier.suggestion.SuggestionsBuilder
-import net.minecraft.command.CommandSource
-import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.Vec3d
-import java.util.concurrent.CompletableFuture
 import kotlin.io.path.createDirectory
 import kotlin.io.path.exists
 
@@ -31,47 +25,55 @@ fun setupExtensionDirectory() {
     }
 }
 
-fun <S : ServerCommandSource> getConfigFiles(commandContext: CommandContext<S>, suggestionsBuilder: SuggestionsBuilder): CompletableFuture<Suggestions> {
-    val list = mutableListOf<String>()
-    list.add(Configs.PLAYERS_CONFIG.relativePath.fileName.toString())
-    list.add(Configs.RULES_CONFIG.relativePath.fileName.toString())
-    list.add("ALL")
-    return CommandSource.suggestMatching(list, suggestionsBuilder)
-}
-
-fun getPlayer(playerEntity: ServerPlayerEntity): Player? = Configs.PLAYERS_CONFIG.serializableData.players.firstOrNull { it.uuid == playerEntity.uuidAsString }
+fun getPlayer(spe: ServerPlayerEntity): Player? = Configs.PLAYERS.serializableData.players.firstOrNull { it.nameWithUUID == getPlayerNameWithUUID(spe) }
 
 fun getHomesRule(player: Player): HomesRule? {
-    return Configs.PLAYERS_CONFIG.serializableData.playerGroups.firstOrNull { it.players.any { p -> p.uuid == player.uuid } }?.let { playerGroup ->
-        Configs.RULES_CONFIG.serializableData.homesRules.firstOrNull { it.name == playerGroup.homesRulesName }?.homesRule
+    return Configs.PLAYERS.serializableData.playerGroups.firstOrNull { it.players.any { playerUUIDWithName -> playerUUIDWithName == player.nameWithUUID } }?.let { playerGroup ->
+        Configs.RULES.serializableData.homesRules.firstOrNull { it.name == playerGroup.homesRulesName }?.homesRule
     }
 }
 
 fun getWarpRule(player: Player): WarpRule? {
-    return Configs.PLAYERS_CONFIG.serializableData.playerGroups.firstOrNull { it.players.any { p -> p.uuid == player.uuid } }?.let { playerGroup ->
-        Configs.RULES_CONFIG.serializableData.warpRules.firstOrNull { it.name == playerGroup.warpRulesName }?.warpRule
+    return Configs.PLAYERS.serializableData.playerGroups.firstOrNull { it.players.any { playerUUIDWithName -> playerUUIDWithName == player.nameWithUUID } }?.let { playerGroup ->
+        Configs.RULES.serializableData.warpRules.firstOrNull { it.name == playerGroup.warpRulesName }?.warpRule
     }
 }
 
 fun getBackRule(player: Player): BackRule? {
-    return Configs.PLAYERS_CONFIG.serializableData.playerGroups.firstOrNull { it.players.any { p -> p.uuid == player.uuid } }?.let { playerGroup ->
-        Configs.RULES_CONFIG.serializableData.backRules.firstOrNull { it.name == playerGroup.backRulesName }?.backRule
+    return Configs.PLAYERS.serializableData.playerGroups.firstOrNull { it.players.any { playerUUIDWithName -> playerUUIDWithName == player.nameWithUUID } }?.let { playerGroup ->
+        Configs.RULES.serializableData.backRules.firstOrNull { it.name == playerGroup.backRulesName }?.backRule
     }
 }
 
+fun getWildRule(player: Player): WildRule? {
+    return Configs.PLAYERS.serializableData.playerGroups.firstOrNull { it.players.any { playerUUIDWithName -> playerUUIDWithName == player.nameWithUUID } }?.let { playerGroup ->
+        Configs.RULES.serializableData.wildRules.firstOrNull { it.name == playerGroup.wildRulesName }?.wildRule
+    }
+}
+
+/**
+ * Return all the warps that are accessible for the player
+ */
 fun getWarps(player: Player): List<Warp> {
-    val playerGroups = Configs.PLAYERS_CONFIG.serializableData.playerGroups.filter { playerGroup ->
-        playerGroup.players.any { it.uuid == player.uuid }
+    val playerGroups = Configs.PLAYERS.serializableData.playerGroups.filter { playerGroup ->
+        playerGroup.players.any { playerNameWithUUID -> playerNameWithUUID == player.nameWithUUID }
     }
 
-    val w = Configs.WARPS.serializableData.warps.map { warp ->
-        if(Configs.WARPS.serializableData.groups.any { warpGroup ->
-            playerGroups.any { playerGroup ->
-                playerGroup.warpGroups.any { it == warpGroup.name }
-            } && warpGroup.warps.any { it == warp.name }
-        }) warp else null
-    }.filterNotNull()
-    return w
+    return Configs.WARPS.serializableData.warps.mapNotNull { warp ->
+        if (Configs.WARPS.serializableData.groups.any { warpGroup ->
+                playerGroups.any { playerGroup ->
+                    playerGroup.warpGroups.any { it == warpGroup.name }
+                } && warpGroup.warps.any { it == warp.name }
+            }) warp else null
+    }
+}
+
+//fun getPlayerUUIDWithName(player: Player): String {
+//    return "${player.name}#${player.nameWithUUID}"
+//}
+
+fun getPlayerNameWithUUID(spe: ServerPlayerEntity): String {
+    return "${spe.name.string}#${spe.uuidAsString}"
 }
 
 fun isDistanceGreaterThan(startPos: Vec3d, nowPos: Vec3d, greaterThan: Int): Boolean {
