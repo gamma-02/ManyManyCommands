@@ -41,17 +41,17 @@ data class HomesRules(
 
 @Serializable
 data class HomesRule(
+    @SerialComment("The number of seconds to remain standing without moving more than 2 blocks before the teleportation is effective")
+    override val standStill: Int = 5,
+    @SerialComment("The number of seconds you have to wait before teleporting a new time")
+    override val cooldown: Int = 15,
     @SerialComment("The maximum number of homes")
     val maxHomes: Int = 3,
-    @SerialComment("The number of seconds you have to wait before teleporting a new time")
-    val cooldown: Int = 15,
-    @SerialComment("The number of seconds to remain standing without moving more than 2 blocks before the teleportation is effective")
-    val standStill: Int = 5,
     @SerialComment("The list of dimension where you can use the /homes create <name> command")
     val allowedDimensionCreating: MutableSet<String>,
     @SerialComment("The list of dimension where you can use the /homes teleport command")
     val allowedDimensionTeleporting: MutableSet<String>
-) : Validatable {
+) : TeleportationRule(), Validatable {
     override fun validateImpl(errors: MutableList<String>) {
         if (maxHomes < 0) errors.add("maxHome cannot have a negative value")
         if (cooldown < 0) errors.add("cooldown cannot have a negative value")
@@ -69,13 +69,13 @@ data class WarpRules(
 
 @Serializable
 data class WarpRule(
-    @SerialComment("The number of seconds you have to wait before using /warps teleport a new time")
-    val cooldown: Int = 15,
     @SerialComment("The number of seconds to remain standing without moving more than 2 blocks before the teleportation is effective")
-    val standStill: Int = 5,
+    override val standStill: Int = 5,
+    @SerialComment("The number of seconds you have to wait before using /warps teleport a new time")
+    override val cooldown: Int = 15,
     @SerialComment("The list of dimension where you can use the /warps teleport command")
     val allowedDimensionTeleporting: MutableSet<String>
-) : Validatable {
+) : TeleportationRule(), Validatable {
     override fun validateImpl(errors: MutableList<String>) {
         if (cooldown < 0) errors.add("cooldown cannot have a negative value")
         if (standStill < 0) errors.add("standStill cannot have a negative value")
@@ -92,13 +92,13 @@ data class BackRules(
 
 @Serializable
 data class BackRule(
-    @SerialComment("The number of seconds you have to wait before using /back a new time")
-    val cooldown: Int = 15,
     @SerialComment("The number of seconds to remain standing without moving more than 2 blocks before the teleportation is effective")
-    val standStill: Int = 5,
+    override val standStill: Int = 5,
+    @SerialComment("The number of seconds you have to wait before using /back a new time")
+    override val cooldown: Int = 15,
     @SerialComment("The list of dimension where you can use the /back command")
     val allowedDimension: MutableSet<String>
-) : Validatable {
+) : TeleportationRule(), Validatable {
     override fun validateImpl(errors: MutableList<String>) {
         if (cooldown < 0) errors.add("cooldown cannot have a negative value")
         if (standStill < 0) errors.add("standStill cannot have a negative value")
@@ -115,20 +115,26 @@ data class WildRules(
 
 @Serializable
 data class WildRule(
+    @SerialComment("The number of seconds to remain standing without moving more than 2 blocks before the teleportation is effective")
+    override val standStill: Int = 3,
+    @SerialComment("The number of seconds you have to wait before using wild a new time")
+    override val cooldown: Int = 15,
     @SerialComment("The number max of usage a player can use /wild")
     val maximumUsage: Int,
-    @SerialComment("The number of seconds you have to wait before using wild a new time")
-    val cooldown: Int = 15,
-    @SerialComment("The number of seconds to remain standing without moving more than 2 blocks before the teleportation is effective")
-    val standStill: Int = 3,
     @SerialComment("The list of dimension where you can use the /wild command")
     val allowedDimension: MutableSet<String>
-) : Validatable {
+) : TeleportationRule(), Validatable {
     override fun validateImpl(errors: MutableList<String>) {
         if (cooldown < 0) errors.add("cooldown cannot have a negative value")
         if (standStill < 0) errors.add("standStill cannot have a negative value")
     }
 }
+
+sealed class TeleportationRule {
+    abstract val standStill: Int
+    abstract val cooldown: Int
+}
+
 
 class DefaultRulesConfig : Defaultable<RulesConfig> {
     override fun getDefault() = RulesConfig(
@@ -149,8 +155,8 @@ class DefaultRulesConfig : Defaultable<RulesConfig> {
             BackRules("MEDIUM", BackRule(20, 5, mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end")))
         ),
         warpRules = mutableSetOf(
-            WarpRules("SHORT", WarpRule(10, 3, mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
-            WarpRules("MEDIUM", WarpRule(20, 5, mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end")))
+            WarpRules("SHORT", WarpRule(3, 10, mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
+            WarpRules("MEDIUM", WarpRule(5, 30, mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end")))
         ),
         wildRules = mutableSetOf(
             WildRules("DEFAULT", WildRule(5, 3600, 3, mutableSetOf("minecraft:overworld")))

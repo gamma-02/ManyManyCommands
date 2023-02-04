@@ -2,6 +2,8 @@
 
 package ch.skyfy.manymanycommands.commands
 
+import ch.skyfy.manymanycommands.api.CustomTeleportationStrategy
+import ch.skyfy.manymanycommands.api.config.TeleportationRule
 import ch.skyfy.manymanycommands.api.data.Location
 import ch.skyfy.manymanycommands.api.data.Player
 import ch.skyfy.manymanycommands.api.data.Teleportation
@@ -27,15 +29,13 @@ import net.silkmc.silk.core.task.mcCoroutineTask
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
-abstract class AbstractTeleportation(
+abstract class AbstractTeleportation<R : TeleportationRule>(
     private val teleporting: MutableMap<String, Pair<Job, Vec3d>>,
     private val cooldowns: MutableMap<String, Long>,
     override val coroutineContext: CoroutineContext = Dispatchers.Default
 ) : AbstractCommand(), CoroutineScope {
 
-    init {
-        EntityMoveCallback.EVENT.register(::onPlayerMove)
-    }
+    init { EntityMoveCallback.EVENT.register(::onPlayerMove) }
 
     private fun onPlayerMove(entity: Entity, movementType: MovementType, movement: Vec3d): ActionResult {
         if (entity is ServerPlayerEntity) {
@@ -53,100 +53,69 @@ abstract class AbstractTeleportation(
         return ActionResult.PASS
     }
 
+    abstract fun runStrategy(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity, player: Player) : CustomTeleportationStrategy<*>?
+
     override fun runImpl(context: CommandContext<ServerCommandSource>): Int {
+        return impl(context)
+    }
+
+    private fun impl(context: CommandContext<ServerCommandSource>) : Int {
         if (context.source.player !is ServerPlayerEntity) return Command.SINGLE_SUCCESS
 
         val spe = context.source.player!!
         val player = Persistent.HOMES.serializableData.players.find { getPlayerNameWithUUID(spe) == it.nameWithUUID } ?: return Command.SINGLE_SUCCESS
-        val rule = getRule(player) ?: return Command.SINGLE_SUCCESS
+        val strategy = runStrategy(context, spe, player) ?: return Command.SINGLE_SUCCESS
 
         // If any other teleportation are already in progress
-        if (Teleportation.warpsTeleporting.containsKey(getPlayerNameWithUUID(spe))) {
+        if (Teleportation.warpsTeleporting.containsKey(player.nameWithUUID)) {
             spe.sendMessage(Text.literal("A teleportation is already in progress").setStyle(Style.EMPTY.withColor(Formatting.RED)))
             return Command.SINGLE_SUCCESS
         }
-        if (Teleportation.homesTeleporting.containsKey(getPlayerNameWithUUID(spe))) {
+        if (Teleportation.homesTeleporting.containsKey(player.nameWithUUID)) {
             spe.sendMessage(Text.literal("A teleportation is already in progress").setStyle(Style.EMPTY.withColor(Formatting.RED)))
             return Command.SINGLE_SUCCESS
         }
-        if (Teleportation.backTeleporting.containsKey(getPlayerNameWithUUID(spe))) {
+        if (Teleportation.backTeleporting.containsKey(player.nameWithUUID)) {
             spe.sendMessage(Text.literal("A teleportation is already in progress").setStyle(Style.EMPTY.withColor(Formatting.RED)))
             return Command.SINGLE_SUCCESS
         }
-        if (Teleportation.wildTeleporting.containsKey(getPlayerNameWithUUID(spe))) {
+        if (Teleportation.wildTeleporting.containsKey(player.nameWithUUID)) {
             spe.sendMessage(Text.literal("A teleportation is already in progress").setStyle(Style.EMPTY.withColor(Formatting.RED)))
             return Command.SINGLE_SUCCESS
         }
 
-        val loc = getLocation(context, spe, player) ?: return Command.SINGLE_SUCCESS
+        val loc = strategy.getLocation(context, spe, player) ?: return Command.SINGLE_SUCCESS
 
-        if (!check(spe, player)) return Command.SINGLE_SUCCESS
+        if (!strategy.check(spe, player)) return Command.SINGLE_SUCCESS
 
         mcCoroutineScope.launch {
-            val startTime = cooldowns[getPlayerNameWithUUID(spe)]
+            val startTime = cooldowns[player.nameWithUUID]
 
             if (startTime != null) {
                 val elapsed = (System.currentTimeMillis() - startTime) / 1000L
-                if (elapsed < rule.cooldown) {
-                    spe.sendMessage(Text.literal("You must wait another ${rule.cooldown - elapsed} seconds before you can use this command again").setStyle(Style.EMPTY.withColor(Formatting.RED)))
+                if (elapsed < strategy.rule.cooldown) {
+                    spe.sendMessage(Text.literal("You must wait another ${strategy.rule.cooldown - elapsed} seconds before you can use this command again").setStyle(Style.EMPTY.withColor(Formatting.RED)))
                     return@launch
                 }
             }
 
-
-            val job = mcCoroutineTask(howOften = rule.standStill.toLong() + 1, period = 1.seconds){
+            val job = mcCoroutineTask(howOften = strategy.rule.standStill.toLong() + 1, period = 1.seconds) {
                 spe.sendMessage(Text.literal("${it.counterDownToOne - 1} seconds left before teleporting").setStyle(Style.EMPTY.withColor(Formatting.GOLD)), true)
             }
 
-            teleporting.putIfAbsent(getPlayerNameWithUUID(spe), Pair(job, Vec3d(spe.pos.x, spe.pos.y, spe.pos.z)))
+            teleporting.putIfAbsent(player.nameWithUUID, Pair(job, Vec3d(spe.pos.x, spe.pos.y, spe.pos.z)))
 
             job.invokeOnCompletion { throwable ->
-                if(throwable != null)return@invokeOnCompletion
+                if (throwable != null) return@invokeOnCompletion
                 spe.server.getWorld(spe.server.worldRegistryKeys.first { it.value.toString() == loc.dimension })?.let {
-                    cooldowns[getPlayerNameWithUUID(spe)] = System.currentTimeMillis()
-                    teleporting.remove(getPlayerNameWithUUID(spe))
-                    onTeleport(spe)
+                    cooldowns[player.nameWithUUID] = System.currentTimeMillis()
+                    teleporting.remove(player.nameWithUUID)
+                    val previousLocation = Location(spe.x, spe.y, spe.z, spe.yaw, spe.pitch, spe.world.dimensionKey.value.toString())
                     spe.teleport(it, loc.x, loc.y, loc.z, loc.yaw, loc.pitch)
+                    strategy.onTeleportDone(spe,previousLocation)
                 }
             }
         }
-
-//        launch {
-//            val startTime = cooldowns[spe.uuidAsString]
-//
-//            if (startTime != null) {
-//                val elapsed = (System.currentTimeMillis() - startTime) / 1000L
-//                if (elapsed < rule.cooldown) {
-//                    spe.sendMessage(Text.literal("You must wait another ${rule.cooldown - elapsed} seconds before you can use this command again").setStyle(Style.EMPTY.withColor(Formatting.RED)))
-//                    return@launch
-//                }
-//            }
-//
-//            teleporting.putIfAbsent(spe.uuidAsString, Pair(this@launch, Vec3d(spe.pos.x, spe.pos.y, spe.pos.z)))
-//
-//            repeat(rule.standStill) { second ->
-//                spe.sendMessage(Text.literal("${rule.standStill - second} seconds left before teleporting").setStyle(Style.EMPTY.withColor(Formatting.GOLD)), true)
-//                delay(1000L)
-//            }
-//
-//            spe.server.getWorld(spe.server.worldRegistryKeys.first { it.value.toString() == loc.dimension })?.let {
-//                cooldowns[spe.uuidAsString] = System.currentTimeMillis()
-//                teleporting.remove(spe.uuidAsString)
-//                onTeleport(spe)
-//                spe.teleport(it, loc.x, loc.y, loc.z, loc.yaw, loc.pitch)
-//            }
-//        }
-
         return Command.SINGLE_SUCCESS
     }
-
-    abstract fun getRule(player: Player): TeleportationRule?
-
-    abstract fun getLocation(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity, player: Player): Location?
-
-    abstract fun check(spe: ServerPlayerEntity, player: Player): Boolean
-
-    abstract fun onTeleport(spe: ServerPlayerEntity)
-
-    data class TeleportationRule(val cooldown: Int = 15, val standStill: Int = 5)
 }

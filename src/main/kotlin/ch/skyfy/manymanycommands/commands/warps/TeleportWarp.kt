@@ -1,12 +1,11 @@
 package ch.skyfy.manymanycommands.commands.warps
 
+import ch.skyfy.manymanycommands.WarpTeleportationStrategy
+import ch.skyfy.manymanycommands.api.CustomTeleportationStrategy
 import ch.skyfy.manymanycommands.api.config.WarpRule
-import ch.skyfy.manymanycommands.api.data.Location
 import ch.skyfy.manymanycommands.api.data.Player
 import ch.skyfy.manymanycommands.api.data.Teleportation
-import ch.skyfy.manymanycommands.api.data.Warp
 import ch.skyfy.manymanycommands.api.persistent.Persistent
-import ch.skyfy.manymanycommands.api.utils.getPlayerNameWithUUID
 import ch.skyfy.manymanycommands.api.utils.getWarpRule
 import ch.skyfy.manymanycommands.api.utils.getWarps
 import ch.skyfy.manymanycommands.commands.AbstractTeleportation
@@ -18,21 +17,10 @@ import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-class TeleportWarp : AbstractTeleportation(Teleportation.warpsTeleporting, Teleportation.warpsCooldowns) {
+class TeleportWarp : AbstractTeleportation<WarpRule>(Teleportation.warpsTeleporting, Teleportation.warpsCooldowns) {
 
-    private var warp: Warp? = null
-    private var warpRule: WarpRule? = null
-
-    override fun getRule(player: Player): TeleportationRule? {
-        val rule = getWarpRule(player) ?: return null
-        this.warpRule = rule
-        return TeleportationRule(rule.cooldown, rule.standStill)
-    }
-
-    override fun getLocation(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity, player: Player): Location? {
+    override fun runStrategy(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity, player: Player): CustomTeleportationStrategy<*>? {
         val warpName = getString(context, "warpName")
-
-        getWarps(player)
 
         val warp = Persistent.WARPS.serializableData.warps.find { it.name == warpName }
         if (warp == null) {
@@ -45,23 +33,9 @@ class TeleportWarp : AbstractTeleportation(Teleportation.warpsTeleporting, Telep
             return null
         }
 
-        this.warp = warp
-        return warp.location
-    }
+        val rule = getWarpRule(player) ?: return null
 
-    override fun check(spe: ServerPlayerEntity, player: Player): Boolean {
-        warpRule?.let { warpRule ->
-            if (warpRule.allowedDimensionTeleporting.none { it == spe.world.dimensionKey.value.toString() }) {
-                spe.sendMessage(Text.literal("You cannot use this command in this dimension !").setStyle(Style.EMPTY.withColor(Formatting.RED)))
-                return false
-            }
-        }
-        return true
-    }
-
-    override fun onTeleport(spe: ServerPlayerEntity) {
-        Persistent.OTHERS_DATA.serializableData.previousLocation[getPlayerNameWithUUID(spe)] = Location(spe.x, spe.y, spe.z, spe.yaw, spe.pitch, spe.world.dimensionKey.value.toString())
-        spe.sendMessage(Text.literal("You've arrived at your destination (${warp?.name})").setStyle(Style.EMPTY.withColor(Formatting.GREEN)))
+        return WarpTeleportationStrategy(warpName, warp, rule)
     }
 
 }

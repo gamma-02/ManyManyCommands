@@ -1,18 +1,18 @@
 package ch.skyfy.manymanycommands.commands
 
-import ch.skyfy.manymanycommands.api.data.Location
+import ch.skyfy.manymanycommands.BackTeleportationStrategy
+import ch.skyfy.manymanycommands.api.CustomTeleportationStrategy
+import ch.skyfy.manymanycommands.api.config.BackRule
 import ch.skyfy.manymanycommands.api.data.Player
 import ch.skyfy.manymanycommands.api.data.Teleportation
-import ch.skyfy.manymanycommands.api.persistent.Persistent
 import ch.skyfy.manymanycommands.api.utils.getBackRule
-import ch.skyfy.manymanycommands.api.utils.getPlayerNameWithUUID
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 
-class BackCmd : AbstractTeleportation(Teleportation.backTeleporting, Teleportation.backCooldowns) {
+class BackCmd : AbstractTeleportation<BackRule>(Teleportation.backTeleporting, Teleportation.backCooldowns) {
 
     companion object {
         fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
@@ -21,19 +21,8 @@ class BackCmd : AbstractTeleportation(Teleportation.backTeleporting, Teleportati
         }
     }
 
-    override fun getRule(player: Player): TeleportationRule? {
+    override fun runStrategy(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity, player: Player): CustomTeleportationStrategy<*>? {
         val rule = getBackRule(player) ?: return null
-        return TeleportationRule(rule.cooldown, rule.standStill)
+        return BackTeleportationStrategy(rule)
     }
-
-    override fun getLocation(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity, player: Player): Location? {
-        return Persistent.OTHERS_DATA.serializableData.previousLocation[getPlayerNameWithUUID(spe)]
-    }
-
-    override fun check(spe: ServerPlayerEntity, player: Player): Boolean {
-        return true
-    }
-
-    override fun onTeleport(spe: ServerPlayerEntity) {}
-
 }
