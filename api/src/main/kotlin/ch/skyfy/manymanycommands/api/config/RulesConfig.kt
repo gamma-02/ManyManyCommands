@@ -124,8 +124,10 @@ data class WildRule(
     override val standStill: Int = 3,
     @SerialComment("The number of seconds you have to wait before using wild a new time")
     override val cooldown: Int = 15,
-    @SerialComment("The number max of usage a player can use /wild")
-    val maximumUsage: Int,
+    @SerialComment("The maximum of usage in total a player can be teleported using /wild")
+    val maximumUsageInTotal: Int,
+    @SerialComment("The maximum number of usage per specified time a player can be teleported using /wild. Default: From the first time the player uses the command, he can use it 3 times every 24 hours")
+    val maximumUsagePerSpecificTime: UsagePerSpecificTime,
     @SerialComment("The list of dimension where you can use the /wild command")
     val allowedDimension: MutableSet<String>
 ) : TeleportationRule(), Validatable {
@@ -209,7 +211,7 @@ class DefaultRulesConfig : Defaultable<RulesConfig> {
             WarpRules("MEDIUM", WarpRule(5, 30, mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end")))
         ),
         wildRules = mutableSetOf(
-            WildRules("DEFAULT", WildRule(5, 3600, 5, mutableSetOf("minecraft:overworld")))
+            WildRules("DEFAULT", WildRule(5, 3600, 20,UsagePerSpecificTime(86400, 3), mutableSetOf("minecraft:overworld")))
         ),
         tpaAcceptRules = mutableSetOf(
             TpaAcceptRules("DEFAULT", TpaRule(3, 10, 1000, UsagePerSpecificTime(86400, 2), mutableSetOf("minecraft:overworld")))

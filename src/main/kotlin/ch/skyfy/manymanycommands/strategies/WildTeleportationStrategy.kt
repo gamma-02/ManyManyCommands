@@ -19,6 +19,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.util.concurrent.atomic.AtomicBoolean
 
 class WildTeleportationStrategy(override val rule: WildRule) : CustomTeleportationStrategy<WildRule>() {
 
@@ -36,12 +37,48 @@ class WildTeleportationStrategy(override val rule: WildRule) : CustomTeleportati
     }
 
     override fun check(spe: ServerPlayerEntity): Boolean {
-        Persistent.OTHERS_DATA.serializableData.currentUsageOfWildCommand[getPlayerNameWithUUID(spe)]?.let { currentUsageOfWildCommand ->
-            if (currentUsageOfWildCommand > rule.maximumUsage) {
-                spe.sendMessage(Text.literal("You have reached the maximum number of uses for this command").setStyle(Style.EMPTY.withColor(Formatting.RED)))
-                return false
+        val shouldCancel = AtomicBoolean(false)
+        Persistent.OTHERS_DATA.updateMap(OthersData::wildUsagePerTime) { wildUsagePerTime ->
+            wildUsagePerTime.compute(getPlayerNameWithUUID(spe)) { _, value ->
+                if (value == null) return@compute Pair(System.currentTimeMillis(), 1)
+                else {
+                    val elapsedTime = System.currentTimeMillis() - value.first
+
+                    if (value.second >= rule.maximumUsageInTotal) {
+                        spe.sendMessage(Text.literal("You have reached the total limit of a teleportation with /wild").setStyle(Style.EMPTY.withColor(Formatting.RED)))
+                        shouldCancel.set(true)
+                        return@compute value
+                    }
+
+                    val totalSecs = rule.maximumUsagePerSpecificTime.time
+                    val hours = totalSecs / 3600
+                    val minutes = (totalSecs % 3600) / 60
+                    val seconds = totalSecs % 60
+                    val timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds)
+
+                    val totalSecsRemaining = totalSecs - (elapsedTime / 1000)
+                    val hours2 = totalSecsRemaining / 3600
+                    val minutes2 = (totalSecsRemaining % 3600) / 60
+                    val seconds2 = totalSecsRemaining % 60
+                    val timeString2 = String.format("%02d:%02d:%02d", hours2, minutes2, seconds2)
+
+                    if ((elapsedTime / 1000) <= rule.maximumUsagePerSpecificTime.time) {
+                        if (value.second < rule.maximumUsagePerSpecificTime.maximumUsage) {
+                            return@compute Pair(value.first, value.second + 1)
+                        } else {
+                            spe.sendMessage(Text.literal("You can only be teleported with /wild ${rule.maximumUsagePerSpecificTime.maximumUsage} times every $timeString. You've reached the limit !").setStyle(Style.EMPTY.withColor(Formatting.RED)))
+                            spe.sendMessage(Text.literal("Time to wait before using teleportation again $timeString2").setStyle(Style.EMPTY.withColor(Formatting.RED)))
+                            shouldCancel.set(true)
+                            return@compute value
+                        }
+                    } else return@compute Pair(System.currentTimeMillis(), 1)
+
+                }
             }
         }
+
+        if (shouldCancel.get()) return false
+
         return true
     }
 

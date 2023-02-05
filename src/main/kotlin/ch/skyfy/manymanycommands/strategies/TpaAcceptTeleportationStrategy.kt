@@ -30,14 +30,14 @@ class TpaAcceptTeleportationStrategy(
 
     override fun check(spe: ServerPlayerEntity): Boolean {
         val shouldCancel = AtomicBoolean(false)
-        Persistent.OTHERS_DATA.updateMap(OthersData::tpaAcceptUsagePerTime) { tpaRequestUsagePerTime ->
-            tpaRequestUsagePerTime.compute(getPlayerNameWithUUID(playerWhoRequested)) { _, value ->
+        Persistent.OTHERS_DATA.updateMap(OthersData::tpaAcceptUsagePerTime) { tpaAcceptUsagePerTime ->
+            tpaAcceptUsagePerTime.compute(getPlayerNameWithUUID(playerWhoRequested)) { _, value ->
                 if (value == null) return@compute Pair(System.currentTimeMillis(), 1)
                 else {
                     val elapsedTime = System.currentTimeMillis() - value.first
 
                     if (value.second >= rule.maximumUsageInTotal) {
-                        playerWhoRequested.sendMessage(Text.literal("You have reached the total limit of a teleportation with /tpa command set").setStyle(Style.EMPTY.withColor(Formatting.RED)))
+                        playerWhoRequested.sendMessage(Text.literal("You have reached the total limit of a teleportation with /tpa").setStyle(Style.EMPTY.withColor(Formatting.RED)))
                         shouldCancel.set(true)
                         return@compute value
                     }
@@ -58,7 +58,7 @@ class TpaAcceptTeleportationStrategy(
                         if (value.second < rule.maximumUsagePerSpecificTime.maximumUsage) {
                             return@compute Pair(value.first, value.second + 1)
                         } else {
-                            playerWhoRequested.sendMessage(Text.literal("You can only be teleported with /tpa command set ${rule.maximumUsagePerSpecificTime.maximumUsage} times every $timeString. You've reached the limit !").setStyle(Style.EMPTY.withColor(Formatting.RED)))
+                            playerWhoRequested.sendMessage(Text.literal("You can only be teleported with /tpa ${rule.maximumUsagePerSpecificTime.maximumUsage} times every $timeString. You've reached the limit !").setStyle(Style.EMPTY.withColor(Formatting.RED)))
                             playerWhoRequested.sendMessage(Text.literal("Time to wait before using teleportation again $timeString2").setStyle(Style.EMPTY.withColor(Formatting.RED)))
                             shouldCancel.set(true)
                             return@compute value
@@ -73,8 +73,6 @@ class TpaAcceptTeleportationStrategy(
 
         return true
     }
-
-//    override fun check(spe: ServerPlayerEntity) = true
 
     override fun onTeleportDone(spe: ServerPlayerEntity, previousLocation: Location) {
         Persistent.OTHERS_DATA.updateMap(OthersData::previousLocation) { it[getPlayerNameWithUUID(spe)] = previousLocation }

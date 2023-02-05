@@ -10,7 +10,10 @@ data class OthersData(
     val previousLocation: MutableMap<String, Location>,
     val currentUsageOfWildCommand: MutableMap<String, Int>,
     var wildTimedLocation: Location?,
-    var tpaAcceptUsagePerTime: MutableMap<String, Pair<Long, Int>>
+    var tpaAcceptUsagePerTime: MutableMap<String, Pair<Long, Int>>,
+    var wildUsagePerTime: MutableMap<String, Pair<Long, Int>>
 ) : Validatable
 
-class DefaultOthersData : Defaultable<OthersData> { override fun getDefault() = OthersData(mutableMapOf(), mutableMapOf(), null, mutableMapOf()) }
+class DefaultOthersData : Defaultable<OthersData> {
+    override fun getDefault() = OthersData(mutableMapOf(), mutableMapOf(), null, mutableMapOf(), mutableMapOf())
+}
