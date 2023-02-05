@@ -149,8 +149,10 @@ data class TpaRule(
     override val standStill: Int = 3,
     @SerialComment("The number of seconds you have to wait before using wild a new time")
     override val cooldown: Int = 15,
-    @SerialComment("The number max of usage a player can use /tpaaccept")
-    val maximumUsagePerDay: Int,
+    @SerialComment("The maximum of usage in total a player can be teleported using /tpa command set")
+    val maximumUsageInTotal: Int,
+    @SerialComment("The maximum number of usage per specified time a player can be teleported using /tpa command set. Default: From the first time the player uses the command, he can use it 2 times every 24 hours")
+    val maximumUsagePerSpecificTime: UsagePerSpecificTime,
     @SerialComment("The list of dimension where you can use /tpa <name> or /tpahere <name>")
     val allowedDimension: MutableSet<String>
 ) : TeleportationRule(), Validatable {
@@ -160,6 +162,13 @@ data class TpaRule(
     }
 }
 
+@Serializable
+data class UsagePerSpecificTime(
+    @SerialComment("The time is seconds. Default -> 86400 (24 hours)")
+    val time: Long,
+    @SerialComment("How many times a player can be teleported using /tpa command set. Default -> 2 times")
+    val maximumUsage: Int
+) : Validatable
 
 @Serializable
 data class GlobalWildRule(
@@ -167,7 +176,7 @@ data class GlobalWildRule(
     val range: Pair<Int, Int>,
 ) : Validatable {
     override fun validateImpl(errors: MutableList<String>) {
-        if(range.first > range.second) errors.add("There is an error in file rules.json5 ! The minimum value is greater than the maximum value !")
+        if (range.first > range.second) errors.add("There is an error in file rules.json5 ! The minimum value is greater than the maximum value !")
         super.validateImpl(errors)
     }
 }
@@ -203,7 +212,7 @@ class DefaultRulesConfig : Defaultable<RulesConfig> {
             WildRules("DEFAULT", WildRule(5, 3600, 5, mutableSetOf("minecraft:overworld")))
         ),
         tpaAcceptRules = mutableSetOf(
-            TpaAcceptRules("DEFAULT", TpaRule(3, 10, 3, mutableSetOf("minecraft:overworld")))
+            TpaAcceptRules("DEFAULT", TpaRule(3, 10, 1000, UsagePerSpecificTime(86400, 2), mutableSetOf("minecraft:overworld")))
         ),
         GlobalWildRule(Pair(4000, 10000))
     )

@@ -12,9 +12,9 @@ import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-abstract class TpaRequestBase : AbstractCommand()  {
+abstract class TpaRequestBase : AbstractCommand() {
 
-    abstract fun customMessage(playerName: String) : Text
+    abstract fun customMessage(playerName: String): Text
 
     override fun runImpl(context: CommandContext<ServerCommandSource>): Int {
         if (context.source.player !is ServerPlayerEntity) return Command.SINGLE_SUCCESS
@@ -22,12 +22,12 @@ abstract class TpaRequestBase : AbstractCommand()  {
         val spe = context.source.player!!
         val server = context.source.server
 
-        val rule = getTpaAcceptRule(getPlayerNameWithUUID(spe))
+        val rule = getTpaAcceptRule(getPlayerNameWithUUID(spe)) ?: return Command.SINGLE_SUCCESS
 
         val playerName = StringArgumentType.getString(context, "playerName")
         val targetPlayer = server.playerManager.getPlayer(playerName)
 
-        if (rule?.allowedDimension?.none { it == spe.world.dimensionKey.value.toString() } == true) {
+        if (rule.allowedDimension.none { it == spe.world.dimensionKey.value.toString() }) {
             spe.sendMessage(Text.literal("You are not allowed to use this command in this dimension !").setStyle(Style.EMPTY.withColor(Formatting.RED)))
             return Command.SINGLE_SUCCESS
         }
@@ -38,9 +38,9 @@ abstract class TpaRequestBase : AbstractCommand()  {
         }
 
         TpaCmd.RECEIVED_REQUESTS.compute(targetPlayer.name.string) { _, set ->
-            if(set == null){
+            if (set == null) {
                 return@compute mutableSetOf(Pair(spe.name.string, TpaCmd.RequestType.REQUEST))
-            }else{
+            } else {
                 set.removeIf { it.first == spe.name.string }
                 set.add(Pair(spe.name.string, TpaCmd.RequestType.REQUEST))
             }
@@ -48,7 +48,6 @@ abstract class TpaRequestBase : AbstractCommand()  {
         }
 
         targetPlayer.sendMessage(customMessage(spe.name.string))
-
         spe.sendMessage(Text.literal("You have sent a teleportation request to ${targetPlayer.name.string}").setStyle(Style.EMPTY.withColor(Formatting.GOLD)))
 
         return Command.SINGLE_SUCCESS

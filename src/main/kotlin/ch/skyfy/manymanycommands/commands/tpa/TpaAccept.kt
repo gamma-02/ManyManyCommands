@@ -35,8 +35,8 @@ class TpaAccept : AbstractTeleportation<TpaRule>(Teleportation.tpaAcceptTeleport
 
             list.firstOrNull { pair -> pair.first == playerName }?.let { pair ->
                 return when (pair.second) {
-                    TpaCmd.RequestType.REQUEST -> TpaAcceptTeleportationStrategy(pair.second, spe, playerTarget, rule)
-                    TpaCmd.RequestType.REQUEST_HERE -> TpaAcceptTeleportationStrategy(pair.second, playerTarget, spe, rule)
+                    TpaCmd.RequestType.REQUEST -> TpaAcceptTeleportationStrategy(pair.second, spe, playerTarget, playerTarget, rule)
+                    TpaCmd.RequestType.REQUEST_HERE -> TpaAcceptTeleportationStrategy(pair.second, playerTarget, spe, playerTarget, rule)
                 }
             }
         }

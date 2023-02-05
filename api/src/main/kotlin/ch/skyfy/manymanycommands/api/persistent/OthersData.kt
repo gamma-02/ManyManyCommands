@@ -9,7 +9,8 @@ import kotlinx.serialization.Serializable
 data class OthersData(
     val previousLocation: MutableMap<String, Location>,
     val currentUsageOfWildCommand: MutableMap<String, Int>,
-    var wildTimedLocation: Location?
+    var wildTimedLocation: Location?,
+    var tpaAcceptUsagePerTime: MutableMap<String, Pair<Long, Int>>
 ) : Validatable
 
-class DefaultOthersData : Defaultable<OthersData> { override fun getDefault() = OthersData(mutableMapOf(), mutableMapOf(), null) }
+class DefaultOthersData : Defaultable<OthersData> { override fun getDefault() = OthersData(mutableMapOf(), mutableMapOf(), null, mutableMapOf()) }

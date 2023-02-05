@@ -7,7 +7,6 @@ import ch.skyfy.manymanycommands.api.config.TeleportationRule
 import ch.skyfy.manymanycommands.api.data.Location
 import ch.skyfy.manymanycommands.api.data.Teleportation
 import ch.skyfy.manymanycommands.api.events.PlayerTeleportationEvents
-import ch.skyfy.manymanycommands.api.persistent.Persistent
 import ch.skyfy.manymanycommands.api.utils.getPlayerNameWithUUID
 import ch.skyfy.manymanycommands.api.utils.isDistanceGreaterThan
 import ch.skyfy.manymanycommands.callbacks.EntityMoveCallback
