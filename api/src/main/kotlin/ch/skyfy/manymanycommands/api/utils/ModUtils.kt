@@ -30,45 +30,47 @@ fun setupExtensionDirectory() {
 
 fun getPlayer(spe: ServerPlayerEntity): Player? = Persistent.HOMES.serializableData.players.firstOrNull { it.nameWithUUID == getPlayerNameWithUUID(spe) }
 
-fun getHomesRule(player: Player): HomesRule? {
-    return Configs.RULES.serializableData.groups.firstOrNull { it.players.any { playerUUIDWithName -> playerUUIDWithName == player.nameWithUUID } }?.let { playerGroup ->
+fun getHomesRule(playerNameWithUUID: String): HomesRule? {
+    return Configs.RULES.serializableData.groups.firstOrNull { it.players.any { playerUUIDWithName -> playerUUIDWithName == playerNameWithUUID } }?.let { playerGroup ->
         Configs.RULES.serializableData.homesRules.firstOrNull { it.name == playerGroup.homesRulesName }?.homesRule
     }
 }
 
-fun getWarpRule(player: Player): WarpRule? {
-    return Configs.RULES.serializableData.groups.firstOrNull { it.players.any { playerUUIDWithName -> playerUUIDWithName == player.nameWithUUID } }?.let { playerGroup ->
+fun getWarpRule(playerNameWithUUID: String): WarpRule? {
+    return Configs.RULES.serializableData.groups.firstOrNull { it.players.any { playerUUIDWithName -> playerUUIDWithName == playerNameWithUUID } }?.let { playerGroup ->
         Configs.RULES.serializableData.warpRules.firstOrNull { it.name == playerGroup.warpRulesName }?.warpRule
     }
 }
 
-fun getBackRule(player: Player): BackRule? {
-    return Configs.RULES.serializableData.groups.firstOrNull { it.players.any { playerUUIDWithName -> playerUUIDWithName == player.nameWithUUID } }?.let { playerGroup ->
+fun getBackRule(playerNameWithUUID: String): BackRule? {
+    return Configs.RULES.serializableData.groups.firstOrNull { it.players.any { playerUUIDWithName -> playerUUIDWithName == playerNameWithUUID } }?.let { playerGroup ->
         Configs.RULES.serializableData.backRules.firstOrNull { it.name == playerGroup.backRulesName }?.backRule
     }
 }
 
-fun getWildRule(player: Player): WildRule? {
-    return Configs.RULES.serializableData.groups.firstOrNull { it.players.any { playerUUIDWithName -> playerUUIDWithName == player.nameWithUUID } }?.let { playerGroup ->
+fun getWildRule(playerNameWithUUID: String): WildRule? {
+    return Configs.RULES.serializableData.groups.firstOrNull { it.players.any { playerUUIDWithName -> playerUUIDWithName == playerNameWithUUID } }?.let { playerGroup ->
         Configs.RULES.serializableData.wildRules.firstOrNull { it.name == playerGroup.wildRulesName }?.wildRule
+    }
+}
+
+fun getTpaAcceptRule(playerNameWithUUID: String): TpaRule? {
+    return Configs.RULES.serializableData.groups.firstOrNull { it.players.any { playerUUIDWithName -> playerUUIDWithName == playerNameWithUUID } }?.let { playerGroup ->
+        Configs.RULES.serializableData.tpaAcceptRules.firstOrNull { it.name == playerGroup.wildRulesName }?.tpaRule
     }
 }
 
 /**
  * Return all the warps that are accessible for the player
  */
-fun getWarps(player: Player): List<Warp> {
-    val playerGroups = Configs.RULES.serializableData.groups.filter { playerGroup ->
-        playerGroup.players.any { playerNameWithUUID -> playerNameWithUUID == player.nameWithUUID }
-    }
+fun getWarps(playerNameWithUUID: String): List<Warp> {
+//    val playerGroups = Configs.RULES.serializableData.groups.filter { playerGroup ->
+//        playerGroup.players.any { playerNameWithUUID2 -> playerNameWithUUID2 == playerNameWithUUID }
+//    }
 
     return Persistent.WARPS.serializableData.warps.mapNotNull { warp ->
         if (Configs.RULES.serializableData.warpGroups.any { warpGroup ->
-                warpGroup.players.any { playerNameWithUUID -> playerNameWithUUID == player.nameWithUUID }
-
-//                playerGroups.any { playerGroup ->
-//                    playerGroup.warpGroups.any { it == warpGroup.name }
-//                } && warpGroup.warps.any { it == warp.name }
+                warpGroup.players.any { playerNameWithUUID2 -> playerNameWithUUID2 == playerNameWithUUID }
             }) warp else null
     }
 }

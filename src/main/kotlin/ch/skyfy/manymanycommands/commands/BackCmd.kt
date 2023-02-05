@@ -1,11 +1,11 @@
 package ch.skyfy.manymanycommands.commands
 
-import ch.skyfy.manymanycommands.BackTeleportationStrategy
 import ch.skyfy.manymanycommands.api.CustomTeleportationStrategy
 import ch.skyfy.manymanycommands.api.config.BackRule
-import ch.skyfy.manymanycommands.api.data.Player
 import ch.skyfy.manymanycommands.api.data.Teleportation
 import ch.skyfy.manymanycommands.api.utils.getBackRule
+import ch.skyfy.manymanycommands.api.utils.getPlayerNameWithUUID
+import ch.skyfy.manymanycommands.strategies.BackTeleportationStrategy
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
 import net.minecraft.server.command.CommandManager
@@ -21,8 +21,8 @@ class BackCmd : AbstractTeleportation<BackRule>(Teleportation.backTeleporting, T
         }
     }
 
-    override fun runStrategy(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity, player: Player): CustomTeleportationStrategy<*>? {
-        val rule = getBackRule(player) ?: return null
+    override fun runStrategy(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity): CustomTeleportationStrategy<*>? {
+        val rule = getBackRule(getPlayerNameWithUUID(spe)) ?: return null
         return BackTeleportationStrategy(rule)
     }
 }

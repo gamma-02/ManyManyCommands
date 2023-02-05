@@ -18,4 +18,6 @@ object Teleportation {
      val wildTeleporting: MutableMap<String, Pair<Job, Vec3d>> = mutableMapOf()
      val wildCooldowns: MutableMap<String, Long> = mutableMapOf()
 
+     val tpaAcceptTeleporting: MutableMap<String, Pair<Job, Vec3d>> = mutableMapOf()
+     val tpaAcceptCooldowns: MutableMap<String, Long> = mutableMapOf()
 }

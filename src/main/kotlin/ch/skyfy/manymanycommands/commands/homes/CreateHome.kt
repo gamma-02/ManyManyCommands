@@ -30,7 +30,7 @@ fun addHomeToPlayer(
 ): Int {
 
     val player = Persistent.HOMES.serializableData.players.find { getPlayerNameWithUUID(spe) == it.nameWithUUID } ?: return SINGLE_SUCCESS
-    val rule = getHomesRule(player) ?: return SINGLE_SUCCESS
+    val rule = getHomesRule(player.nameWithUUID) ?: return SINGLE_SUCCESS
 
     if (rule.allowedDimensionCreating.none { dimensionName -> dimensionName == spe.world.dimensionKey.value.toString() }) {
         spe.sendMessage(Text.literal("You don't have the permission to create a home in this dimension !").setStyle(Style.EMPTY.withColor(Formatting.RED)))

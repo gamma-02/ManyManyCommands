@@ -18,7 +18,7 @@ class ListWarp : AbstractCommand() {
         val spe = context.source.player!!
 
         Persistent.HOMES.serializableData.players.firstOrNull { it.nameWithUUID == getPlayerNameWithUUID(spe) }?.let { player ->
-            getWarps(player).forEach { warp ->
+            getWarps(player.nameWithUUID).forEach { warp ->
                 spe.sendMessage(Text.literal("- ${warp.name}").setStyle(Style.EMPTY.withColor(Formatting.DARK_PURPLE)))
             }
         }

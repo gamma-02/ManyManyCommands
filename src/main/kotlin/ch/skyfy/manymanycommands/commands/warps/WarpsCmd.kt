@@ -68,7 +68,7 @@ class WarpsCmd {
             if (commandContext.source.player !is ServerPlayerEntity) return suggestMatching(Persistent.WARPS.serializableData.warps.map { it.name }, suggestionsBuilder)
 
             getPlayer(commandContext.source.player!!)?.let { player ->
-                return suggestMatching(getWarps(player).map { it.name }, suggestionsBuilder)
+                return suggestMatching(getWarps(player.nameWithUUID).map { it.name }, suggestionsBuilder)
             }
 
             return suggestMatching(listOf(), suggestionsBuilder)

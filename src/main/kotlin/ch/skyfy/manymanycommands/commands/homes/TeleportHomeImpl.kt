@@ -1,12 +1,13 @@
 package ch.skyfy.manymanycommands.commands.homes
 
-import ch.skyfy.manymanycommands.HomeTeleportationStrategy
 import ch.skyfy.manymanycommands.api.CustomTeleportationStrategy
 import ch.skyfy.manymanycommands.api.config.HomesRule
-import ch.skyfy.manymanycommands.api.data.Player
 import ch.skyfy.manymanycommands.api.data.Teleportation
+import ch.skyfy.manymanycommands.api.persistent.Persistent
 import ch.skyfy.manymanycommands.api.utils.getHomesRule
+import ch.skyfy.manymanycommands.api.utils.getPlayerNameWithUUID
 import ch.skyfy.manymanycommands.commands.AbstractTeleportation
+import ch.skyfy.manymanycommands.strategies.HomesTeleportationStrategy
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.arguments.StringArgumentType.getString
 import com.mojang.brigadier.context.CommandContext
@@ -18,9 +19,9 @@ import net.minecraft.util.Formatting
 
 abstract class TeleportHomeImpl : AbstractTeleportation<HomesRule>(Teleportation.homesTeleporting, Teleportation.homesCooldowns) {
 
-    override fun runStrategy(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity, player: Player): CustomTeleportationStrategy<*>? {
+    override fun runStrategy(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity): CustomTeleportationStrategy<*>? {
         val homeName = getString(context, "homeName")
-
+        val player = Persistent.HOMES.serializableData.players.find { getPlayerNameWithUUID(spe) == it.nameWithUUID } ?: return null
         val home = player.homes.find { it.name == homeName }
 
         if (home == null) {
@@ -28,9 +29,9 @@ abstract class TeleportHomeImpl : AbstractTeleportation<HomesRule>(Teleportation
             return null
         }
 
-        val rule = getHomesRule(player) ?: return null
+        val rule = getHomesRule(player.nameWithUUID) ?: return null
 
-        return HomeTeleportationStrategy(homeName, home, rule)
+        return HomesTeleportationStrategy(homeName, home, rule)
     }
 
 }

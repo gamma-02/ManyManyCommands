@@ -11,9 +11,11 @@ abstract class CustomTeleportationStrategy<RULE : TeleportationRule> {
 
     abstract val rule: RULE
 
-    abstract fun getLocation(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity, player: Player): Location?
+    open fun getPlayerToTeleport(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity) : ServerPlayerEntity = spe
 
-    abstract fun check(spe: ServerPlayerEntity, player: Player): Boolean
+    abstract fun getLocation(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity): Location?
+
+    abstract fun check(spe: ServerPlayerEntity): Boolean
 
     abstract fun onTeleportDone(spe: ServerPlayerEntity, previousLocation: Location)
 }

@@ -28,7 +28,12 @@ data class RulesConfig(
     @SerialComment("Same but for the /warps command")
     val warpRules: MutableSet<WarpRules>,
     @SerialComment("Same but for the /wild command")
-    val wildRules: MutableSet<WildRules>
+    val wildRules: MutableSet<WildRules>,
+    @SerialComment("Same but for the /tpaaccept command")
+    val tpaAcceptRules: MutableSet<TpaAcceptRules>,
+
+    @SerialComment("Some global rules about how the /wild command will work")
+    val globalWildRule: GlobalWildRule
 ) : Validatable
 
 @Serializable
@@ -130,11 +135,47 @@ data class WildRule(
     }
 }
 
+@Serializable
+data class TpaAcceptRules(
+    @SerialComment("The name to identify the rules")
+    val name: String,
+    @SerialComment("The rules to use in relation with /wild command")
+    val tpaRule: TpaRule
+) : Validatable
+
+@Serializable
+data class TpaRule(
+    @SerialComment("The number of seconds to remain standing without moving more than 2 blocks before the teleportation is effective")
+    override val standStill: Int = 3,
+    @SerialComment("The number of seconds you have to wait before using wild a new time")
+    override val cooldown: Int = 15,
+    @SerialComment("The number max of usage a player can use /tpaaccept")
+    val maximumUsagePerDay: Int,
+    @SerialComment("The list of dimension where you can use /tpa <name> or /tpahere <name>")
+    val allowedDimension: MutableSet<String>
+) : TeleportationRule(), Validatable {
+    override fun validateImpl(errors: MutableList<String>) {
+        if (cooldown < 0) errors.add("cooldown cannot have a negative value")
+        if (standStill < 0) errors.add("standStill cannot have a negative value")
+    }
+}
+
+
+@Serializable
+data class GlobalWildRule(
+    @SerialComment("The area where player will get randomly teleported. By default, it's an area over the first 4000 blocks in each direction, but not more than 10000 blocks ")
+    val range: Pair<Int, Int>,
+) : Validatable {
+    override fun validateImpl(errors: MutableList<String>) {
+        if(range.first > range.second) errors.add("There is an error in file rules.json5 ! The minimum value is greater than the maximum value !")
+        super.validateImpl(errors)
+    }
+}
+
 sealed class TeleportationRule {
     abstract val standStill: Int
     abstract val cooldown: Int
 }
-
 
 class DefaultRulesConfig : Defaultable<RulesConfig> {
     override fun getDefault() = RulesConfig(
@@ -146,21 +187,25 @@ class DefaultRulesConfig : Defaultable<RulesConfig> {
         warpGroups = mutableSetOf(WarpGroup("DEFAULT", mutableListOf(), mutableSetOf())),
         homesRules = mutableSetOf(
             HomesRules("SHORT", HomesRule(3, 10, 3, mutableSetOf("minecraft:overworld"), mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
-            HomesRules("MEDIUM", HomesRule(4, 15, 5, mutableSetOf("minecraft:overworld"), mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
-            HomesRules("LONG", HomesRule(5, 30, 5, mutableSetOf("minecraft:overworld"), mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
-            HomesRules("BORING", HomesRule(6, 60, 5, mutableSetOf("minecraft:overworld"), mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
+            HomesRules("MEDIUM", HomesRule(5, 30, 5, mutableSetOf("minecraft:overworld"), mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
+            HomesRules("LONG", HomesRule(10, 60, 6, mutableSetOf("minecraft:overworld"), mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
+            HomesRules("BORING", HomesRule(15, 120, 8, mutableSetOf("minecraft:overworld"), mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
         ),
         backRules = mutableSetOf(
-            BackRules("SHORT", BackRule(10, 3, mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
-            BackRules("MEDIUM", BackRule(20, 5, mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end")))
+            BackRules("SHORT", BackRule(3, 10, mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
+            BackRules("MEDIUM", BackRule(5, 20, mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end")))
         ),
         warpRules = mutableSetOf(
             WarpRules("SHORT", WarpRule(3, 10, mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"))),
             WarpRules("MEDIUM", WarpRule(5, 30, mutableSetOf("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end")))
         ),
         wildRules = mutableSetOf(
-            WildRules("DEFAULT", WildRule(5, 3600, 3, mutableSetOf("minecraft:overworld")))
-        )
+            WildRules("DEFAULT", WildRule(5, 3600, 5, mutableSetOf("minecraft:overworld")))
+        ),
+        tpaAcceptRules = mutableSetOf(
+            TpaAcceptRules("DEFAULT", TpaRule(3, 10, 3, mutableSetOf("minecraft:overworld")))
+        ),
+        GlobalWildRule(Pair(4000, 10000))
     )
 
 }

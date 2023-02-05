@@ -13,6 +13,7 @@ import ch.skyfy.manymanycommands.commands.BackCmd
 import ch.skyfy.manymanycommands.commands.ReloadFilesCmd
 import ch.skyfy.manymanycommands.commands.WildCmd
 import ch.skyfy.manymanycommands.commands.homes.HomesCmd
+import ch.skyfy.manymanycommands.commands.tpa.TpaCmd
 import ch.skyfy.manymanycommands.commands.warps.WarpsCmd
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -65,8 +66,8 @@ class ManyManyCommandsMod : ModInitializer {
         WarpsCmd.register(dispatcher)
         BackCmd.register(dispatcher)
         WildCmd.register(dispatcher)
+        TpaCmd.register(dispatcher)
         ReloadFilesCmd.register(dispatcher)
-
     }
 
 }
