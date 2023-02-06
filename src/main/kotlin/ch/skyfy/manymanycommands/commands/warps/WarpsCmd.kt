@@ -31,7 +31,7 @@ class WarpsCmd {
                                 .suggests { context, suggestionBuilder -> EntityArgumentType.players().listSuggestions(context, suggestionBuilder) }
                                 .then(
                                     literal("teleport")
-                                        .then(argument("warpName", StringArgumentType.string()).suggests(::warps))
+                                        .then(argument("warpName", StringArgumentType.string()).suggests(::warps).executes(TeleportWarpsForAnotherPlayer()))
                                 )
                         )
                 )
@@ -58,7 +58,7 @@ class WarpsCmd {
                     literal("list").executes(ListWarp())
                 ).then(
                     literal("teleport").then(
-                        argument("warpName", StringArgumentType.string()).suggests(::warps).executes(TeleportWarp())
+                        argument("warpName", StringArgumentType.string()).suggests(::warps).executes(TeleportWarps())
                     )
                 )
             dispatcher.register(cmd)

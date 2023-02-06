@@ -3,7 +3,7 @@
   "id": "manymanycommands",
   "version": "${version}",
   "name": "ManyManyCommands",
-  "description": "Add many commands like /homes, /warps, /back, /spawn, etc.",
+  "description": "Add many commands like /homes, /warps, /back, /wild, /tpa, etc.",
   "authors": ["Skyfy16"],
   "contact": {},
   "license": "MIT",
@@ -22,8 +22,8 @@
     "java": ">=17",
     "minecraft": "1.19.3",
     "fabric": "*",
-    "fabricloader": ">=0.14.13",
-    "fabric-language-kotlin": ">=1.9.0+kotlin.1.8.0",
+    "fabricloader": ">=0.14.14",
+    "fabric-language-kotlin": ">=1.9.1+kotlin.1.8.10",
     "silk-all": ">=1.9.5",
     "manymanycommands_api": ">=0.0.1+1.19.3"
   }

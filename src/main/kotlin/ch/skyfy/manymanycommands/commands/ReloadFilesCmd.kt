@@ -37,6 +37,7 @@ class ReloadFilesCmd : Command<ServerCommandSource> {
             list.add(Configs.RULES.relativePath.fileName.toString())
             list.add(Persistent.HOMES.relativePath.fileName.toString())
             list.add(Persistent.WARPS.relativePath.fileName.toString())
+            list.add(Persistent.OTHERS_DATA.relativePath.fileName.toString())
             list.add("ALL")
             return CommandSource.suggestMatching(list, suggestionsBuilder)
         }
@@ -49,11 +50,13 @@ class ReloadFilesCmd : Command<ServerCommandSource> {
             list.add(ConfigManager.reloadConfig(Configs.RULES))
             list.add(ConfigManager.reloadConfig(Persistent.HOMES))
             list.add(ConfigManager.reloadConfig(Persistent.WARPS))
+            list.add(ConfigManager.reloadConfig(Persistent.OTHERS_DATA))
         } else {
             when (fileName) {
                 "rules.json5" -> list.add(ConfigManager.reloadConfig(Configs.RULES))
                 "homes.json5" -> list.add(ConfigManager.reloadConfig(Persistent.HOMES))
                 "warps.json5" -> list.add(ConfigManager.reloadConfig(Persistent.WARPS))
+                "others-data.json5" -> list.add(ConfigManager.reloadConfig(Persistent.OTHERS_DATA))
             }
         }
 
