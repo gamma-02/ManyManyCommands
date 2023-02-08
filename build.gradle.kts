@@ -39,7 +39,7 @@ allprojects {
         modImplementation("net.silkmc:silk-game:${properties["silk_version"]}")
 //        modImplementation("fr.catcore:server-translations-api:${properties["server_translations_version"]}")
 
-        transitiveInclude(implementation("ch.skyfy.json5configlib:json5-config-lib:1.0.21")!!)
+        transitiveInclude(implementation("ch.skyfy.json5configlib:json5-config-lib:1.0.22")!!)
 
         handleIncludes(project, transitiveInclude)
 
