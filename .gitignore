@@ -6,3 +6,7 @@
 
 # Project exclude paths
 /api/build/
+/preconfiguration/doneclient.txt
+/preconfiguration/doneserver.txt
+/testserver/
+/testclient/
