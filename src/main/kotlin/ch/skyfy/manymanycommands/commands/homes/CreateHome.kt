@@ -18,6 +18,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.util.function.Supplier
 
 fun addHomeToPlayer(
     spe: ServerPlayerEntity,
@@ -80,7 +81,7 @@ class CreateHomeForAnotherPlayer : AbstractCommand() {
         val targetPlayerName = getString(context, "playerName")
         val targetPlayer = context.source?.server?.playerManager?.getPlayer(targetPlayerName)
         if (targetPlayer != null) addHomeToPlayer(targetPlayer, getString(context, "homeName"))
-        else context.source?.sendFeedback(Text.literal("Player not found"), false)
+        else context.source?.sendFeedback(Supplier { Text.literal("Player not found") }, false)
         return SINGLE_SUCCESS
     }
 }
@@ -99,7 +100,7 @@ class CreateHomeForAnotherPlayerWithCoordinates : AbstractCommand() {
                 pitch = getFloat(context, "pitch"),
                 yaw = getFloat(context, "yaw"),
             )
-        else context.source?.sendFeedback(Text.literal("Player not found"), false)
+        else context.source?.sendFeedback(Supplier { Text.literal("Player not found") }, false)
         return SINGLE_SUCCESS
     }
 }

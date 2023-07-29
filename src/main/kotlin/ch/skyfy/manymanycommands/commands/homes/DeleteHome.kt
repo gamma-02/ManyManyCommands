@@ -13,6 +13,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.util.function.Supplier
 
 fun deleteHome(
     spe: ServerPlayerEntity,
@@ -39,7 +40,7 @@ class DeleteHomeForAnotherPlayer : AbstractCommand()  {
         val targetPlayerName = getString(context, "playerName")
         val targetPlayer = context.source?.server?.playerManager?.getPlayer(targetPlayerName)
         if (targetPlayer != null) deleteHome(targetPlayer, getString(context, "homeName"))
-        else context.source?.sendFeedback(Text.literal("Player not found"), false)
+        else context.source?.sendFeedback(Supplier { Text.literal("Player not found") }, false)
         return 0
     }
 }

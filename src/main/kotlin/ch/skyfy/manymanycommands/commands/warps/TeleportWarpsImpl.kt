@@ -18,6 +18,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.util.function.Supplier
 
 open class TeleportWarpsImpl : AbstractTeleportation<WarpRule>(Teleportation.warpsTeleporting, Teleportation.warpsCooldowns) {
     override fun runStrategy(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity): CustomTeleportationStrategy<*>? {
@@ -47,7 +48,7 @@ class TeleportWarpsForAnotherPlayer: TeleportWarpsImpl() {
     override fun runImpl(context: CommandContext<ServerCommandSource>): Int {
         val targetPlayer = context.source?.server?.playerManager?.getPlayer(StringArgumentType.getString(context, "playerName"))
         if (targetPlayer != null) super.runImpl(context)
-        else context.source?.sendFeedback(Text.literal("Player not found"), false)
+        else context.source?.sendFeedback(Supplier { Text.literal("Player not found") }, false)
         return Command.SINGLE_SUCCESS
     }
 }
