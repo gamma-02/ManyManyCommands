@@ -21,7 +21,7 @@ publishing {
             url = uri("https://repo.repsy.io/mvn/amibeskyfy16/repo")
             credentials {
                 val properties = Properties()
-                properties.load(file("D:\\Tech\\Resources\\Repsy\\repsy.properties").inputStream())
+                properties.load(file("Z:\\#2 - Profiles\\KotSeek\\Resources\\Repsy\\repsy.properties").inputStream())
                 username = "${properties["USERNAME"]}"
                 password = "${properties["PASSWORD"]}"
             }
