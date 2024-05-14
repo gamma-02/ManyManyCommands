@@ -101,7 +101,10 @@ abstract class AbstractTeleportation<R : TeleportationRule>(
                 }
             }
 
-            val job = mcCoroutineTask(howOften = strategy.rule.standStill.toLong() + 1, period = 1.seconds) {
+            val job = mcCoroutineTask(
+                howOften = strategy.rule.standStill.toLong() + 1,
+                period = 1.seconds
+            ) {
                 playerToTeleport.sendMessage(Text.literal("${it.counterDownToOne - 1} seconds left before teleporting").setStyle(Style.EMPTY.withColor(Formatting.GOLD)), true)
             }
 
@@ -112,7 +115,7 @@ abstract class AbstractTeleportation<R : TeleportationRule>(
                 playerToTeleport.server.getWorld(playerToTeleport.server.worldRegistryKeys.first { it.value.toString() == loc.dimension })?.let {
                     cooldowns[playerToTeleportNameWithUUID] = System.currentTimeMillis()
                     teleporting.remove(playerToTeleportNameWithUUID)
-                    val previousLocation = Location(playerToTeleport.x, playerToTeleport.y, playerToTeleport.z, playerToTeleport.yaw, playerToTeleport.pitch, playerToTeleport.world.dimensionKey.value.toString())
+                    val previousLocation = Location(playerToTeleport.x, playerToTeleport.y, playerToTeleport.z, playerToTeleport.yaw, playerToTeleport.pitch, playerToTeleport.world.dimensionEntry.value().toString())
                     playerToTeleport.teleport(it, loc.x, loc.y, loc.z, loc.yaw, loc.pitch)
                     strategy.onTeleportDone(playerToTeleport, previousLocation)
                 }

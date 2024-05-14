@@ -27,7 +27,7 @@ abstract class TpaRequestBase : AbstractCommand() {
         val playerName = StringArgumentType.getString(context, "playerName")
         val targetPlayer = server.playerManager.getPlayer(playerName)
 
-        if (rule.allowedDimension.none { it == spe.world.dimensionKey.value.toString() }) {
+        if (rule.allowedDimension.none { it == spe.world.dimensionEntry.value().toString() }) {
             spe.sendMessage(Text.literal("You are not allowed to use this command in this dimension !").setStyle(Style.EMPTY.withColor(Formatting.RED)))
             return Command.SINGLE_SUCCESS
         }

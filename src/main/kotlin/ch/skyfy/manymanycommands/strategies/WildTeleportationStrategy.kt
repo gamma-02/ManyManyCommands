@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class WildTeleportationStrategy(override val rule: WildRule) : CustomTeleportationStrategy<WildRule>() {
 
     override fun getLocation(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity): Location? {
-        if (rule.allowedDimension.none { allowedDim -> allowedDim == spe.world.dimensionKey.value.toString() }) {
+        if (rule.allowedDimension.none { allowedDim -> allowedDim == spe.world.dimensionEntry.value().toString() }) {
             spe.sendMessage(Text.literal("You cannot use this command in this dimension").setStyle(Style.EMPTY.withColor(Formatting.RED)))
             return null
         }
@@ -33,7 +33,7 @@ class WildTeleportationStrategy(override val rule: WildRule) : CustomTeleportati
             WildCmd.Type.DIRECT -> WildCmd.getRandomLocation()
             WildCmd.Type.TIMED -> Persistent.OTHERS_DATA.serializableData.wildTimedLocation
         } ?: return null
-        return Location(loc.x, loc.y, loc.z, loc.pitch, loc.yaw, spe.world.dimensionKey.value.toString())
+        return Location(loc.x, loc.y, loc.z, loc.pitch, loc.yaw, spe.world.dimensionEntry.value().toString())
     }
 
     override fun check(spe: ServerPlayerEntity): Boolean {

@@ -2,7 +2,7 @@
 
 plugins {
     id("maven-publish")
-    id("fabric-loom") version "1.5-SNAPSHOT"
+    id("fabric-loom") version "1.6-SNAPSHOT"
     id("org.jetbrains.kotlin.jvm") version "1.9.23"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.23"
     idea
@@ -24,6 +24,7 @@ allprojects {
             content { includeGroup("curse.maven") }
         }
         maven("https://maven.nucleoid.xyz")
+
     }
 
     dependencies {
@@ -44,7 +45,7 @@ allprojects {
     }
 
     tasks {
-        val javaVersion = JavaVersion.VERSION_17
+        val javaVersion = JavaVersion.VERSION_21
 
         processResources {
             inputs.property("version", rootProject.version)

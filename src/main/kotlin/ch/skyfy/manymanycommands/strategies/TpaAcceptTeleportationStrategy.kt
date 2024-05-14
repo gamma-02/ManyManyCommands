@@ -26,7 +26,7 @@ class TpaAcceptTeleportationStrategy(
 
     override fun getPlayerToTeleport(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity) = playerToTeleport
 
-    override fun getLocation(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity) = Location(otherPlayer.x, otherPlayer.y, otherPlayer.z, otherPlayer.pitch, otherPlayer.yaw, otherPlayer.world.dimensionKey.value.toString())
+    override fun getLocation(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity) = Location(otherPlayer.x, otherPlayer.y, otherPlayer.z, otherPlayer.pitch, otherPlayer.yaw, otherPlayer.world.dimensionEntry.value().toString())
 
     override fun check(spe: ServerPlayerEntity): Boolean {
         val shouldCancel = AtomicBoolean(false)
