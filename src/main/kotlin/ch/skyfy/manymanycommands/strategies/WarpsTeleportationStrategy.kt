@@ -22,7 +22,8 @@ class WarpsTeleportationStrategy(private val warpName: String, private val warp:
     override fun getLocation(context: CommandContext<ServerCommandSource>, spe: ServerPlayerEntity) = warp.location
 
     override fun check(spe: ServerPlayerEntity): Boolean {
-        if (rule.allowedDimensionTeleporting.none { it == spe.world.dimensionEntry.value().toString() }) {
+        if (rule.allowedDimensionTeleporting.none {
+            return it == spe.world.dimensionEntry.key.get().value.toString() }) {
             spe.sendMessage(Text.literal("You cannot use this command in this dimension !").setStyle(Style.EMPTY.withColor(Formatting.RED)))
             return false
         }

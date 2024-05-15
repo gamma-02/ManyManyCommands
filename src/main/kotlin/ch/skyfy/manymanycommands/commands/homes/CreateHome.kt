@@ -33,7 +33,8 @@ fun addHomeToPlayer(
     val player = Persistent.HOMES.serializableData.players.find { getPlayerNameWithUUID(spe) == it.nameWithUUID } ?: return SINGLE_SUCCESS
     val rule = getHomesRule(player.nameWithUUID) ?: return SINGLE_SUCCESS
 
-    if (rule.allowedDimensionCreating.none { dimensionName -> dimensionName == spe.world.dimensionEntry.value().toString() }) {
+    if (rule.allowedDimensionCreating.none { dimensionName ->
+        dimensionName ==  spe.world.dimensionEntry.key.get().value.toString()}) {
         spe.sendMessage(Text.literal("You don't have the permission to create a home in this dimension !").setStyle(Style.EMPTY.withColor(Formatting.RED)))
         return SINGLE_SUCCESS
     }
@@ -50,7 +51,7 @@ fun addHomeToPlayer(
         return SINGLE_SUCCESS
     }
 
-    Persistent.HOMES.updateIterableNested(Player::homes, player.homes) { it.add(Home(homeName, Location(x, y, z, pitch, yaw, spe.world.dimensionEntry.value().toString()))) }
+    Persistent.HOMES.updateIterableNested(Player::homes, player.homes) { it.add(Home(homeName, Location(x, y, z, pitch, yaw, spe.world.dimensionEntry.key.get().value.toString()))) }
 
     spe.sendMessage(Text.literal("The home of name «$homeName» at coordinate ${String.format("%.2f", x)} ${String.format("%.2f", y)} ${String.format("%.2f", z)} has been added").setStyle(Style.EMPTY.withColor(Formatting.GREEN)))
     return SINGLE_SUCCESS

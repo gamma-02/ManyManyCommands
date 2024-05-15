@@ -28,7 +28,7 @@ fun addWarp(
     z: Double = spe.z,
     pitch: Float = spe.pitch,
     yaw: Float = spe.yaw,
-    dimension: String = spe.world.dimensionEntry.value().toString()
+    dimension: String = spe.world.dimensionEntry.key.get().value.toString()
 ) {
     Persistent.WARPS.serializableData.warps.find { it.name == warpName }?.let {
         spe.sendMessage(Text.literal("A Warp with the name $warpName already exist").setStyle(Style.EMPTY.withColor(Formatting.RED)))
